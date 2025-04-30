@@ -1,0 +1,139 @@
+'use client';
+import { PageHeader } from '@/components/layout';
+import { Button } from '@/components/ui';
+import { createPoll } from '@/lib/api';
+import { uniqueId } from '@/utils/pollUtils';
+import { useState } from 'react';
+import { CreateOptions } from './CreateOptions';
+import { CreatePollSuccess } from './CreatePollSuccess';
+import { CreateQuestion } from './CreateQuestion';
+import { CreateSettings } from './CreateSettings';
+
+/**
+ * Container for creating a new poll with options and settings
+ */
+export default function CreatePollContainer({ userId }: { userId: string }) {
+  // Form state
+  const [question, setQuestion] = useState('');
+  const [options, setOptions] = useState([
+    { id: uniqueId(), value: '' },
+    { id: uniqueId(), value: '' },
+  ]);
+  const [allowMultipleVotes, setAllowMultipleVotes] = useState(false);
+  const [allowVotersToAddOptions, setAllowVotersToAddOptions] = useState(false);
+
+  // UI state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resultLinks, setResultLinks] = useState(null);
+
+  // Validation state
+  const [questionError, setQuestionError] = useState(false);
+  const [optionError, setOptionError] = useState(false);
+
+  // Validation logic extracted to separate function
+  const validateForm = () => {
+    const hasEmptyQuestion = !question.trim();
+    const hasEmptyOptions = options.some(option => !option.value.trim());
+
+    setQuestionError(hasEmptyQuestion);
+    setOptionError(hasEmptyOptions);
+
+    return !hasEmptyQuestion && !hasEmptyOptions;
+  };
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      const optionValues = options.map(o => o.value);
+      const response = await createPoll(
+        question,
+        userId,
+        allowMultipleVotes,
+        optionValues,
+        allowVotersToAddOptions
+      );
+
+      if (response.error) {
+        alert(response.error);
+      } else {
+        setResultLinks(response.links);
+      }
+    } catch (error) {
+      console.error('Error creating poll:', error);
+      alert('An error occurred while creating the poll. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Reset form to create another poll
+  const handleCreateAnother = () => {
+    setQuestion('');
+    setOptions([
+      { id: uniqueId(), value: '' },
+      { id: uniqueId(), value: '' },
+    ]);
+    setAllowMultipleVotes(false);
+    setAllowVotersToAddOptions(false);
+    setResultLinks(null);
+    setQuestionError(false);
+    setOptionError(false);
+  };
+
+  // Show success view if poll was created, otherwise show form
+  const isPollCreated = resultLinks !== null;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title={isPollCreated ? 'Poll Created Successfully' : 'Create a New Poll'}
+        subtitle={
+          isPollCreated
+            ? 'Your poll is ready to be shared with others.'
+            : 'Create customized polls with multiple options and share them with others to collect votes.'
+        }
+      />
+
+      {!isPollCreated ? (
+        <>
+          <CreateQuestion
+            question={question}
+            setQuestion={setQuestion}
+            hasQuestionError={questionError}
+            setQuestionError={setQuestionError}
+          />
+
+          <CreateOptions
+            options={options}
+            setOptions={setOptions}
+            hasOptionError={optionError}
+            setOptionError={setOptionError}
+          />
+
+          <CreateSettings
+            allowMultipleVotes={allowMultipleVotes}
+            allowVotersToAddOptions={allowVotersToAddOptions}
+            setAllowMultipleVotes={setAllowMultipleVotes}
+            setAllowVotersToAddOptions={setAllowVotersToAddOptions}
+          />
+
+          <Button size="lg" variant="default" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create Poll'}
+          </Button>
+        </>
+      ) : (
+        <CreatePollSuccess
+          question={question}
+          options={options}
+          allowMultipleVotes={allowMultipleVotes}
+          allowVotersToAddOptions={allowVotersToAddOptions}
+          resultLinks={resultLinks}
+          onCreateAnother={handleCreateAnother}
+        />
+      )}
+    </div>
+  );
+}
