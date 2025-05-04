@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 /**
  * User API Routes
@@ -17,14 +17,14 @@ import prisma from '@/lib/prisma';
  * Fetches the details of a specific user by their ID.
  *
  * @param request - The incoming HTTP request
- * @param params - Route parameters containing the userId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 200: User details (id, name, phone)
  *   - 404: User not found
  *   - 500: Server error
  */
-export async function GET(request: Request, { params }: { params: Promise<{ userId: string }> }) {
-  const { userId } = await params;
+export async function GET(request: Request, context: { params: { userId: string } }) {
+  const { userId } = context.params;
 
   try {
     const user = await prisma.user.findUnique({
@@ -50,15 +50,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
  * Currently only supports updating the user's name.
  *
  * @param request - The incoming HTTP request containing the new name
- * @param params - Route parameters containing the userId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 200: Updated user details (id, name)
  *   - 400: Missing or invalid name
  *   - 404: User not found
  *   - 500: Server error
  */
-export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
-  const { userId } = await params;
+export async function PUT(request: Request, context: { params: { userId: string } }) {
+  const { userId } = context.params;
   try {
     const body = await request.json();
     const { name } = body;

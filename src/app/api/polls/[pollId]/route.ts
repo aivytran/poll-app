@@ -38,14 +38,14 @@ export const voteWithUserName = Prisma.defineExtension({
  * which is derived from the associated user's name.
  *
  * @param request - The incoming HTTP request
- * @param params - Route parameters containing the pollId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 200: Poll details with options and votes
  *   - 404: Poll not found
  *   - 500: Server error
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ pollId: string }> }) {
-  const { pollId } = await params;
+export async function GET(_request: Request, context: { params: { pollId: string } }) {
+  const { pollId } = context.params;
 
   try {
     const prisma = new PrismaClient().$extends(voteWithUserName);
@@ -98,16 +98,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pol
  * Preserves the option order specified in the request.
  *
  * @param request - The incoming HTTP request with options array and admin token
- * @param params - Route parameters containing the pollId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 200: Successfully updated poll options
  *   - 400: Missing options
  *   - 401: Invalid admin token
  *   - 500: Server error
  */
-export async function PATCH(request: NextRequest, { params }: { params: { pollId: string } }) {
+export async function PATCH(request: NextRequest, context: { params: { pollId: string } }) {
   try {
-    const { pollId } = await params;
+    const { pollId } = context.params;
     const { options, token } = await request.json();
 
     if (!options?.length) {

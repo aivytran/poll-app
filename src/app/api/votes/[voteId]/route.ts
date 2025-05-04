@@ -17,17 +17,14 @@ import { NextResponse } from 'next/server';
  * This endpoint is used when a user clicks an option they've already voted for.
  *
  * @param request - The incoming HTTP request
- * @param params - Route parameters containing the voteId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 200: Successfully deleted vote
  *   - 404: Vote not found
  *   - 500: Server error
  */
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ voteId: string }> }
-) {
-  const { voteId } = await params;
+export async function DELETE(_request: Request, context: { params: { voteId: string } }) {
+  const { voteId } = context.params;
 
   try {
     const prisma = new PrismaClient();
