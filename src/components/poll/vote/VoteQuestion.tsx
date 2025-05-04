@@ -1,5 +1,6 @@
-import { Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
 import { Check, Users } from 'lucide-react';
+
+import { Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
 
 interface VoteQuestionProps {
   question: string;

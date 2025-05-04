@@ -1,7 +1,8 @@
-import { LinkCard } from '@/components/poll/shared/LinkCard';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
 import { CircleAlert, CircleCheckBig, ScrollText, ShieldUser, UserCircle } from 'lucide-react';
 import { useState } from 'react';
+
+import { LinkCard } from '@/components/poll/shared/LinkCard';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
 
 /**
  * Component shown after a poll is successfully created
@@ -28,7 +29,7 @@ export function CreatePollSuccess({
   const [adminCopied, setAdminCopied] = useState(false);
 
   const handleCopyLink = (linkType: 'voting' | 'admin') => {
-    if (!resultLinks) return;
+    if (!resultLinks) {return;}
 
     const link = linkType === 'voting' ? resultLinks.voteLink : resultLinks.adminLink;
     const setStateFn = linkType === 'voting' ? setVotingCopied : setAdminCopied;

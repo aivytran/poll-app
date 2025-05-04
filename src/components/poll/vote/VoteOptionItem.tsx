@@ -1,7 +1,9 @@
+import { useCallback, useMemo, useState } from 'react';
+
 import { Badge, Card, CardContent, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { calculateProgressPercentage } from '@/utils/pollUtils';
-import { useCallback, useMemo, useState } from 'react';
+
 import { VoterAvatars, VoterDrawer, type VoteInfo } from './VoterComponents';
 
 interface VoteOptionItemProps {
@@ -37,7 +39,7 @@ export default function VoteOptionItem({
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!hasUserName) return;
+      if (!hasUserName) {return;}
       onClick(id, e);
     },
     [hasUserName, onClick, id]

@@ -1,3 +1,6 @@
+import { X } from 'lucide-react';
+import { forwardRef } from 'react';
+
 import {
   Avatar,
   AvatarFallback,
@@ -12,8 +15,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui';
 import { getUserInitials } from '@/utils/pollUtils';
-import { X } from 'lucide-react';
-import { forwardRef } from 'react';
 
 // Types
 export type VoteInfo = { id: string; userId?: string; voterName?: string };
@@ -43,7 +44,7 @@ export function VoterAvatars({
   votes: VoteInfo[];
   openVoterDrawer: (e: React.MouseEvent) => void;
 }) {
-  if (!votes.length) return null;
+  if (!votes.length) {return null;}
 
   return (
     <div className="flex items-center -space-x-1 group" onClick={openVoterDrawer}>

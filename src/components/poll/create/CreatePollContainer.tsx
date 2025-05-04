@@ -1,9 +1,11 @@
 'use client';
+import { useState } from 'react';
+
 import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { createPoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
-import { useState } from 'react';
+
 import { CreateOptions } from './CreateOptions';
 import { CreatePollSuccess } from './CreatePollSuccess';
 import { CreateQuestion } from './CreateQuestion';
@@ -43,7 +45,7 @@ export default function CreatePollContainer({ userId }: { userId: string }) {
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {return;}
 
     setIsSubmitting(true);
     try {
