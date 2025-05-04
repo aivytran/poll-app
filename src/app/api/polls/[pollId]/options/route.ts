@@ -15,7 +15,7 @@ import { NextResponse } from 'next/server';
  * Requires the admin token for authentication unless allowVoterOptions is enabled.
  *
  * @param request - The incoming HTTP request with optionText and token in the body
- * @param params - Route parameters containing the pollId
+ * @param context - Context object containing route parameters
  * @returns
  *   - 201: Created option
  *   - 400: Missing required fields
@@ -23,8 +23,8 @@ import { NextResponse } from 'next/server';
  *   - 404: Poll not found
  *   - 500: Server error
  */
-export async function POST(request: Request, { params }: { params: { pollId: string } }) {
-  const { pollId } = params;
+export async function POST(request: Request, context: { params: { pollId: string } }) {
+  const { pollId } = context.params;
 
   try {
     const { text, token } = await request.json();
