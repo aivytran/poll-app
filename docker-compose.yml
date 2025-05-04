@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: poll-app-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: polluser
+      POSTGRES_PASSWORD: pollpassword
+      POSTGRES_DB: polldb
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
