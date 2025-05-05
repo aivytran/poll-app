@@ -37,6 +37,7 @@ export default function VoteOptionVoteMode({
   onEnterEditMode,
 }: VoteOptionVoteModeProps) {
   const [newOption, setNewOption] = useState('');
+  const [processingOptionId, setProcessingOptionId] = useState<string | null>(null);
   const maxVotes = useMemo(
     () => options.reduce((max, option) => Math.max(max, option.votes?.length || 0), 0),
     [options]
@@ -49,6 +50,13 @@ export default function VoteOptionVoteMode({
 
   // Handle voting/unvoting for an option
   const handleVote = async (optionId: string) => {
+    // Prevent multiple rapid clicks on the same option
+    if (processingOptionId) {
+      return;
+    }
+
+    setProcessingOptionId(optionId);
+
     try {
       const voteId = optionToUserVoteMap[optionId];
 
@@ -71,6 +79,8 @@ export default function VoteOptionVoteMode({
       onVoteChange();
     } catch (error) {
       console.error('Error processing vote:', error);
+    } finally {
+      setProcessingOptionId(null);
     }
   };
 
@@ -102,7 +112,8 @@ export default function VoteOptionVoteMode({
             isVoted={!!optionToUserVoteMap[option.id]}
             maxVotes={maxVotes}
             hasUserName={hasUserName}
-            onClick={handleVote}
+            onClick={id => handleVote(id)}
+            isProcessing={processingOptionId === option.id}
           />
         ))}
       </CardContent>

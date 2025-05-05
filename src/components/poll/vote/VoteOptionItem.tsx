@@ -13,7 +13,8 @@ interface VoteOptionItemProps {
   isVoted: boolean;
   maxVotes: number;
   hasUserName: boolean;
-  onClick: (id: string, e: React.MouseEvent) => void;
+  onClick: (id: string, e?: React.MouseEvent) => void;
+  isProcessing?: boolean;
 }
 
 export default function VoteOptionItem({
@@ -24,6 +25,7 @@ export default function VoteOptionItem({
   maxVotes,
   hasUserName,
   onClick,
+  isProcessing = false,
 }: VoteOptionItemProps) {
   const voteCount = useMemo(() => votes.length, [votes]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -39,15 +41,17 @@ export default function VoteOptionItem({
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!hasUserName) {return;}
+      if (!hasUserName || isProcessing) {
+        return;
+      }
       onClick(id, e);
     },
-    [hasUserName, onClick, id]
+    [hasUserName, onClick, id, isProcessing]
   );
 
   const cardClasses = cn(
     'w-full border-0 shadow-none bg-transparent py-0 group',
-    hasUserName
+    hasUserName && !isProcessing
       ? 'hover:bg-accent/10 transition-colors cursor-pointer'
       : 'opacity-80 pointer-events-none'
   );
@@ -56,10 +60,10 @@ export default function VoteOptionItem({
     <>
       <Card
         role="button"
-        tabIndex={hasUserName ? 0 : -1}
+        tabIndex={hasUserName && !isProcessing ? 0 : -1}
         className={cardClasses}
         onClick={handleCardClick}
-        aria-disabled={!hasUserName}
+        aria-disabled={!hasUserName || isProcessing}
         aria-pressed={isVoted}
       >
         <CardContent className="p-1 pb-0">
@@ -69,23 +73,31 @@ export default function VoteOptionItem({
               <div
                 className={cn(
                   'relative h-4 w-4 flex-shrink-0 rounded-full border transition-colors',
-                  isVoted ? 'border-primary border-2' : 'border-muted-foreground/50'
+                  isVoted ? 'border-primary border-2' : 'border-muted-foreground/50',
+                  isProcessing && 'opacity-50 animate-pulse'
                 )}
               >
                 {isVoted && <div className="absolute inset-0.5 rounded-full bg-primary" />}
               </div>
-              <span className="font-medium truncate">{text}</span>
+              <span className={cn('font-medium truncate', isProcessing && 'opacity-50')}>
+                {text}
+              </span>
             </div>
 
             {/* Vote count and avatars */}
             <div
-              className="flex items-center flex-shrink-0 ml-2"
+              className={cn('flex items-center flex-shrink-0 ml-2', isProcessing && 'opacity-50')}
               onClick={e => {
-                e.stopPropagation();
-                openVoterDrawer(e);
+                if (!isProcessing) {
+                  e.stopPropagation();
+                  openVoterDrawer(e);
+                }
               }}
             >
-              <VoterAvatars votes={votes} openVoterDrawer={openVoterDrawer} />
+              <VoterAvatars
+                votes={votes}
+                openVoterDrawer={isProcessing ? undefined : openVoterDrawer}
+              />
 
               <Badge className="border-none" variant="outline">
                 {voteCount}
@@ -94,7 +106,7 @@ export default function VoteOptionItem({
           </div>
 
           {/* Progress bar */}
-          <Progress value={progressPercentage} />
+          <Progress value={progressPercentage} className={cn(isProcessing && 'opacity-50')} />
         </CardContent>
       </Card>
 
