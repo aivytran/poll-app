@@ -37,24 +37,6 @@ export async function createPoll(
 }
 
 /**
- * Fetches a poll by its ID
- */
-export async function fetchPoll(pollId: string) {
-  try {
-    const response = await fetch(`/api/polls/${pollId}`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch poll: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching poll:', error);
-    return null;
-  }
-}
-
-/**
  * Updates a poll with the specified options
  *
  * @param pollId - ID of the poll to update
@@ -124,29 +106,6 @@ export async function createPollOption(pollId: string, text: string, token?: str
 // =============================================================================
 
 /**
- * Fetches votes by user ID, optionally filtered by poll ID
- */
-export async function fetchVotesByUserId(userId: string, pollId?: string) {
-  try {
-    let urlString = `/api/votes?userId=${encodeURIComponent(userId)}`;
-    if (pollId) {
-      urlString += `&pollId=${encodeURIComponent(pollId)}`;
-    }
-
-    const response = await fetch(urlString);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user votes: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching user votes:', error);
-    return { votes: [] };
-  }
-}
-
-/**
  * Submits a new vote for an option
  */
 export async function submitVote(optionId: string, userId: string) {
@@ -191,25 +150,6 @@ export async function deleteVote(voteId: string) {
 // =============================================================================
 // USER ENDPOINTS
 // =============================================================================
-
-/**
- * Fetches a user by ID
- */
-export async function fetchUser(userId: string) {
-  try {
-    const response = await fetch(`/api/users/${userId}`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    return null;
-  }
-}
-
 /**
  * Updates a user's name
  */

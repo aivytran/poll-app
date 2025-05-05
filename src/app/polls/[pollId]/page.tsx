@@ -1,7 +1,9 @@
 import { cookies } from 'next/headers';
 
 import VotePollContainer from '@/components/poll/vote/VotePollContainer';
-import { fetchPoll, fetchUser, fetchVotesByUserId } from '@/lib/api';
+import { voteWithUserName } from '@/lib/extensions';
+import prisma from '@/lib/prisma';
+
 interface PollData {
   id: string;
   question: string;
@@ -32,6 +34,100 @@ interface VoteData {
   }[];
 }
 
+/**
+ * Fetches poll data with options and votes
+ */
+async function getPollData(pollId: string): Promise<PollData | null> {
+  const extendedPrisma = prisma.$extends(voteWithUserName);
+
+  const poll = await extendedPrisma.poll.findUnique({
+    where: { id: pollId },
+    select: {
+      id: true,
+      question: true,
+      allowMultipleVotes: true,
+      allowVotersToAddOptions: true,
+      adminToken: true,
+      createdAt: true,
+      options: {
+        select: {
+          id: true,
+          text: true,
+          order: true,
+          votes: {
+            select: {
+              id: true,
+              voterName: true,
+            },
+          },
+        },
+        orderBy: {
+          order: 'asc',
+        },
+      },
+    },
+  });
+
+  if (!poll) return null;
+
+  // Properly serialize the poll data to avoid non-serializable objects
+  return {
+    ...poll,
+    createdAt: poll.createdAt.toISOString(),
+    adminToken: poll.adminToken || '',
+    options: poll.options.map(option => ({
+      ...option,
+      votes: option.votes.map(vote => ({
+        id: vote.id,
+        voterName: vote.voterName || '',
+      })),
+    })),
+  };
+}
+
+/**
+ * Fetches user votes for a specific poll
+ */
+async function getUserVotes(userId: string, pollId: string): Promise<VoteData> {
+  const votes = await prisma.vote.findMany({
+    where: {
+      userId,
+      option: {
+        pollId,
+      },
+    },
+    select: {
+      id: true,
+      optionId: true,
+    },
+  });
+
+  return {
+    votes: votes.map(vote => ({
+      id: vote.id,
+      optionId: vote.optionId,
+    })),
+  };
+}
+
+/**
+ * Fetches user data by ID
+ */
+async function getUserData(userId: string): Promise<UserData | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true },
+  });
+
+  if (!user) return null;
+
+  // Return a plain JavaScript object
+  return {
+    id: user.id,
+    name: user.name || '',
+  };
+}
+
 export default async function PollPage({
   params,
   searchParams,
@@ -43,34 +139,26 @@ export default async function PollPage({
   const resolvedSearchParams = await searchParams;
   const token = (resolvedSearchParams.token as string) || null;
 
-  // Get user ID from cookies - using await with cookies()
+  // Get user ID from cookies
   const cookieStore = await cookies();
   const userId = cookieStore.get('user_id')!.value;
 
-  // Fetch all data on the server
-  const [poll, userVotes, user] = await Promise.all([
-    fetchPoll(pollId) as Promise<PollData>,
-    fetchVotesByUserId(userId, pollId) as Promise<VoteData>,
-    fetchUser(userId) as Promise<UserData>,
+  // Fetch all data in parallel
+  const [poll, userVotesData, user] = await Promise.all([
+    getPollData(pollId),
+    getUserVotes(userId, pollId),
+    getUserData(userId),
   ]);
 
   if (!poll) {
     return <div className="text-red-600">Poll not found</div>;
   }
 
-  // Create a map of optionId to voteId for easy lookup
-  const optionToVoteMap: Record<string, string> = {};
-  if (userVotes.votes) {
-    userVotes.votes.forEach(vote => {
-      optionToVoteMap[vote.optionId] = vote.id;
-    });
-  }
-
   return (
     <VotePollContainer
       initialUser={user}
       initialPoll={poll}
-      initialUserVotes={userVotes.votes}
+      initialUserVotes={userVotesData.votes}
       token={token}
     />
   );
