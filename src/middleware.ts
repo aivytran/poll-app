@@ -1,7 +1,6 @@
 import { supabaseEdge } from '@/lib/supabase-edge';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 /**
  * Next.js Middleware
  *
@@ -14,15 +13,15 @@ import { NextResponse } from 'next/server';
  * - We can't call our own API routes from middleware (would create circular dependencies)
  */
 export async function middleware(request: NextRequest) {
-  const userId = request.cookies.get('user_id')?.value;
+  const userId = request.cookies.get('user_id');
 
   if (!userId) {
     try {
       // Create a guest user directly with Supabase
       // NOTE: This operation bypasses Prisma for the specific Edge runtime constraint
       const { data, error } = await supabaseEdge
-        .from('users')
-        .insert({ isAuthenticated: false })
+        .from('User')
+        .insert({ id: crypto.randomUUID(), isAuthenticated: false })
         .select()
         .single();
 
