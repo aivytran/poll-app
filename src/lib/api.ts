@@ -13,7 +13,7 @@ export async function createPoll(
   allowVotersToAddOptions: boolean = false
 ) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/polls`, {
+    const response = await fetch(`/api/polls`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -41,7 +41,7 @@ export async function createPoll(
  */
 export async function fetchPoll(pollId: string) {
   try {
-    const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/polls/${pollId}`);
+    const url = new URL(`/api/polls/${pollId}`);
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -102,14 +102,11 @@ export async function updatePoll(
  */
 export async function createPollOption(pollId: string, text: string, token?: string) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/polls/${pollId}/options`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, token }),
-      }
-    );
+    const response = await fetch(`/api/polls/${pollId}/options`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, token }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -132,7 +129,7 @@ export async function createPollOption(pollId: string, text: string, token?: str
  */
 export async function fetchVotesByUserId(userId: string, pollId?: string) {
   try {
-    const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes`);
+    const url = new URL(`/api/votes`);
     url.searchParams.append('userId', userId);
 
     if (pollId) {
@@ -157,7 +154,7 @@ export async function fetchVotesByUserId(userId: string, pollId?: string) {
  */
 export async function submitVote(optionId: string, userId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes`, {
+    const response = await fetch(`}/api/votes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ optionId, userId }),
@@ -179,7 +176,7 @@ export async function submitVote(optionId: string, userId: string) {
  */
 export async function deleteVote(voteId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes/${voteId}`, {
+    const response = await fetch(`/api/votes/${voteId}`, {
       method: 'DELETE',
     });
 
@@ -203,7 +200,7 @@ export async function deleteVote(voteId: string) {
  */
 export async function fetchUser(userId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}`);
+    const response = await fetch(`/api/users/${userId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch user: ${response.statusText}`);
@@ -224,7 +221,7 @@ export async function updateUserName(
   name: string
 ): Promise<{ id: string; name: string } | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`/api/users/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
