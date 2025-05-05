@@ -1,5 +1,7 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
 
 /**
  * Vote API Routes
@@ -30,9 +32,7 @@ export async function DELETE(
   const { voteId } = await params;
 
   try {
-    const prisma = new PrismaClient();
-
-    // Delete the vote
+    // Delete the vote using the singleton Prisma client
     await prisma.vote.delete({
       where: { id: voteId },
     });
