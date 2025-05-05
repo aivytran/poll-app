@@ -18,14 +18,14 @@ import prisma from '@/lib/prisma';
  * Fetches the details of a specific user by their ID.
  *
  * @param request - The incoming HTTP request
- * @param context - Context object containing route parameters
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: User details (id, name, phone)
  *   - 404: User not found
  *   - 500: Server error
  */
-export async function GET(request: Request, context: { params: { userId: string } }) {
-  const { userId } = context.params;
+export async function GET(_request: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
 
   try {
     const user = await prisma.user.findUnique({
@@ -51,15 +51,15 @@ export async function GET(request: Request, context: { params: { userId: string 
  * Currently only supports updating the user's name.
  *
  * @param request - The incoming HTTP request containing the new name
- * @param context - Context object containing route parameters
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: Updated user details (id, name)
  *   - 400: Missing or invalid name
  *   - 404: User not found
  *   - 500: Server error
  */
-export async function PUT(request: Request, context: { params: { userId: string } }) {
-  const { userId } = context.params;
+export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
   try {
     const body = await request.json();
     const { name } = body;

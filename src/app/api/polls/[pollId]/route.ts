@@ -1,7 +1,8 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
+import { voteWithUserName } from '@/lib/extensions';
 
 /**
  * Poll API Routes
@@ -12,20 +13,6 @@ import prisma from '@/lib/prisma';
  *
  * The endpoint requires a valid pollId parameter in the URL.
  */
-
-export const voteWithUserName = Prisma.defineExtension({
-  name: 'voteWithUserName',
-  result: {
-    vote: {
-      voterName: {
-        needs: { user: true } as any,
-        compute(vote: { user?: { name: string | null } }) {
-          return vote.user?.name || 'Anonymous';
-        },
-      },
-    },
-  },
-});
 
 /**
  * GET /api/polls/[pollId]
@@ -39,14 +26,14 @@ export const voteWithUserName = Prisma.defineExtension({
  * which is derived from the associated user's name.
  *
  * @param request - The incoming HTTP request
- * @param context - Context object containing route parameters
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: Poll details with options and votes
  *   - 404: Poll not found
  *   - 500: Server error
  */
-export async function GET(_request: Request, context: { params: { pollId: string } }) {
-  const { pollId } = context.params;
+export async function GET(_request: Request, { params }: { params: Promise<{ pollId: string }> }) {
+  const { pollId } = await params;
 
   try {
     const prisma = new PrismaClient().$extends(voteWithUserName);
@@ -99,16 +86,20 @@ export async function GET(_request: Request, context: { params: { pollId: string
  * Preserves the option order specified in the request.
  *
  * @param request - The incoming HTTP request with options array and admin token
- * @param context - Context object containing route parameters
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: Successfully updated poll options
  *   - 400: Missing options
  *   - 401: Invalid admin token
  *   - 500: Server error
  */
-export async function PATCH(request: NextRequest, context: { params: { pollId: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ pollId: string }> }
+) {
+  const { pollId } = await params;
+
   try {
-    const { pollId } = context.params;
     const { options, token } = await request.json();
 
     if (!options?.length) {

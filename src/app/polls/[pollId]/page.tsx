@@ -36,10 +36,11 @@ export default async function PollPage({
   params,
   searchParams,
 }: {
-  params: { pollId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ pollId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const [{ pollId }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const { pollId } = await params;
+  const resolvedSearchParams = await searchParams;
   const token = (resolvedSearchParams.token as string) || null;
 
   // Get user ID from cookies - using await with cookies()

@@ -16,7 +16,7 @@ import prisma from '@/lib/prisma';
  * Requires the admin token for authentication unless allowVoterOptions is enabled.
  *
  * @param request - The incoming HTTP request with optionText and token in the body
- * @param context - Context object containing route parameters
+ * @param params - Route parameters containing pollId
  * @returns
  *   - 201: Created option
  *   - 400: Missing required fields
@@ -24,8 +24,8 @@ import prisma from '@/lib/prisma';
  *   - 404: Poll not found
  *   - 500: Server error
  */
-export async function POST(request: Request, context: { params: { pollId: string } }) {
-  const { pollId } = context.params;
+export async function POST(request: Request, { params }: { params: Promise<{ pollId: string }> }) {
+  const { pollId } = await params;
 
   try {
     const { text, token } = await request.json();
