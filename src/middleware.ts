@@ -1,38 +1,32 @@
-import { PrismaClient } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
-// Create a singleton instance of PrismaClient to avoid too many connections
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // Prevent multiple instances during hot reloading in development
-  if (!global.prisma) {
-    global.prisma = new PrismaClient();
-  }
-  prisma = global.prisma;
-}
 
 export async function middleware(request: NextRequest) {
   const userId = request.cookies.get('user_id')?.value;
 
   if (!userId) {
-    // Create a guest user directly with Prisma
-    const guestUser = await prisma.user.create({
-      data: {
-        isAuthenticated: false,
+    // Create user via API route instead of directly using Prisma
+    const response = await fetch(`${request.nextUrl.origin}/api/users/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
     });
 
-    const response = NextResponse.next();
-    response.cookies.set('user_id', guestUser.id, {
+    if (!response.ok) {
+      console.error('Failed to create user');
+      return NextResponse.next();
+    }
+
+    const { id } = await response.json();
+
+    const nextResponse = NextResponse.next();
+    nextResponse.cookies.set('user_id', id, {
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     });
 
-    return response;
+    return nextResponse;
   }
 
   return NextResponse.next();
