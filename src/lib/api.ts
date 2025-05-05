@@ -41,8 +41,7 @@ export async function createPoll(
  */
 export async function fetchPoll(pollId: string) {
   try {
-    const url = new URL(`/api/polls/${pollId}`);
-    const response = await fetch(url);
+    const response = await fetch(`/api/polls/${pollId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch poll: ${response.statusText}`);
@@ -129,14 +128,12 @@ export async function createPollOption(pollId: string, text: string, token?: str
  */
 export async function fetchVotesByUserId(userId: string, pollId?: string) {
   try {
-    const url = new URL(`/api/votes`);
-    url.searchParams.append('userId', userId);
-
+    let urlString = `/api/votes?userId=${encodeURIComponent(userId)}`;
     if (pollId) {
-      url.searchParams.append('pollId', pollId);
+      urlString += `&pollId=${encodeURIComponent(pollId)}`;
     }
 
-    const response = await fetch(url);
+    const response = await fetch(urlString);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch user votes: ${response.statusText}`);
@@ -154,7 +151,7 @@ export async function fetchVotesByUserId(userId: string, pollId?: string) {
  */
 export async function submitVote(optionId: string, userId: string) {
   try {
-    const response = await fetch(`}/api/votes`, {
+    const response = await fetch(`/api/votes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ optionId, userId }),
