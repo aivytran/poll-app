@@ -6,7 +6,7 @@ interface ValidationMessageProps {
 }
 
 export function ValidationMessage({ message, show }: ValidationMessageProps) {
-  if (!show) return null;
+  if (!show) {return null;}
 
   return (
     <div className="flex items-center mt-2 text-destructive text-sm font-medium">

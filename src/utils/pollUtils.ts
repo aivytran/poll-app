@@ -11,7 +11,10 @@ export const uniqueId = () => {
  * @returns Uppercase initials from the name
  */
 export const getUserInitials = (name?: string) => {
-  if (!name) return '';
+  if (!name) {
+    return '';
+  }
+
   return name
     .split(' ')
     .map(word => word.charAt(0).toUpperCase())

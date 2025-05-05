@@ -1,6 +1,7 @@
 'use client';
-import { BackgroundTheme, useTheme } from '@/context/ThemeContext';
 import { useEffect, useRef } from 'react';
+
+import { BackgroundTheme, useTheme } from '@/context/ThemeContext';
 
 interface Particle {
   x: number;
@@ -249,7 +250,9 @@ export default function ParticlesBackground() {
 
   const drawParticles = (canvas: HTMLCanvasElement, timestamp: number) => {
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     // Calculate delta time for animation
     lastTimeRef.current = timestamp;
@@ -335,7 +338,7 @@ export default function ParticlesBackground() {
     timestamp: number
   ) => {
     // Don't draw connecting lines for soap bubbles
-    let poppedBubbles: Particle[] = [];
+    const poppedBubbles: Particle[] = [];
 
     // Occasionally add a new bubble
     if (Math.random() > 0.991 && particles.length < 7) {
@@ -375,7 +378,9 @@ export default function ParticlesBackground() {
       }
 
       // Skip drawing if popped
-      if (particle.popped) return;
+      if (particle.popped) {
+        return;
+      }
 
       // Regular bubble animation
       if (particle.growing) {
@@ -588,7 +593,7 @@ export default function ParticlesBackground() {
         radius: baseRadius,
         minRadius: baseRadius * 0.7,
         maxRadius: baseRadius * 1.5,
-        color: color,
+        color,
         speedX: (Math.random() - 0.5) * 0.5, // Even slower movement
         speedY: -Math.random() * 0.3 - 0.05, // Gentler upward drift
         alpha: Math.random() * 0.1 + 0.9, // Increased from 0.8 to 0.9 for more visibility
@@ -708,7 +713,7 @@ export default function ParticlesBackground() {
       ctx.globalAlpha = currentAlpha;
 
       // Convert hex color to rgb format if needed
-      let particleColor = particle.color;
+      const particleColor = particle.color;
       let gradientColor0 = particleColor;
       let gradientColor1, gradientColor2, gradientColor3;
 
@@ -1361,34 +1366,40 @@ export default function ParticlesBackground() {
   };
 
   // Update the animation loop to use requestAnimationFrame's timestamp
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  useEffect(
+    () => {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        return;
+      }
 
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const handleResize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        createParticles(canvas);
+      };
+
+      handleResize();
+      window.addEventListener('resize', handleResize);
       createParticles(canvas);
-    };
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    createParticles(canvas);
+      let animationFrameId: number;
 
-    let animationFrameId: number;
+      const animate = (timestamp: number) => {
+        drawParticles(canvas, timestamp);
+        animationFrameId = window.requestAnimationFrame(animate);
+      };
 
-    const animate = (timestamp: number) => {
-      drawParticles(canvas, timestamp);
       animationFrameId = window.requestAnimationFrame(animate);
-    };
 
-    animationFrameId = window.requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.cancelAnimationFrame(animationFrameId);
-    };
-  }, [backgroundTheme]);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.cancelAnimationFrame(animationFrameId);
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [backgroundTheme]
+  );
 
   return (
     <canvas

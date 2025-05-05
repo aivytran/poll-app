@@ -1,6 +1,7 @@
+import { cookies } from 'next/headers';
+
 import VotePollContainer from '@/components/poll/vote/VotePollContainer';
 import { fetchPoll, fetchUser, fetchVotesByUserId } from '@/lib/api';
-import { cookies } from 'next/headers';
 interface PollData {
   id: string;
   question: string;

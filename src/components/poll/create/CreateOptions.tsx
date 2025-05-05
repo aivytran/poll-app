@@ -1,3 +1,5 @@
+import { ListTodo, Plus } from 'lucide-react';
+
 import DragDropOptions from '@/components/poll/shared/DragDropOptions';
 import {
   Button,
@@ -9,7 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui';
 import { uniqueId } from '@/utils/pollUtils';
-import { ListTodo, Plus } from 'lucide-react';
 
 interface CreateOptionsProps {
   options: Array<{ id: string; value: string }>;
@@ -32,7 +33,7 @@ export function CreateOptions({
   };
 
   const handleRemoveOption = (id: string) => {
-    if (options.length <= 2) return;
+    if (options.length <= 2) {return;}
     setOptions(options.filter(option => option.id !== id));
   };
 

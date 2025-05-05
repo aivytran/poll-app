@@ -1,5 +1,6 @@
-import { CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { CheckCircle, Edit, Info, MousePointer } from 'lucide-react';
+
+import { CardDescription, CardHeader, CardTitle } from '@/components/ui';
 
 interface VoteStatusMessageProps {
   hasUserName: boolean;

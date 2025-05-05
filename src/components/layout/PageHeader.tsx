@@ -1,7 +1,8 @@
 'use client';
 
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { BarChart2 } from 'lucide-react';
+
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 
 export interface PageHeaderProps {
   title: string;

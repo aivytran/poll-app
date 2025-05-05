@@ -1,3 +1,5 @@
+import { Settings } from 'lucide-react';
+
 import {
   Card,
   CardContent,
@@ -6,7 +8,6 @@ import {
   CardTitle,
   Checkbox,
 } from '@/components/ui';
-import { Settings } from 'lucide-react';
 
 interface CreateSettingsProps {
   allowMultipleVotes: boolean;

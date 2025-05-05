@@ -1,6 +1,8 @@
 'use client';
-import { Card } from '@/components/ui';
 import { useState } from 'react';
+
+import { Card } from '@/components/ui';
+
 import VoteOptionEditMode from './VoteOptionEditMode';
 import VoteOptionVoteMode from './VoteOptionVoteMode';
 import VoteStatusMessage from './VoteStatusMessage';
