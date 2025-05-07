@@ -117,6 +117,12 @@ export async function submitVote(optionId: string, userId: string) {
     });
 
     if (!response.ok) {
+      // For 409 Conflict (duplicate vote), return success with the existing vote
+      if (response.status === 409) {
+        const data = await response.json();
+        console.warn('Prevented duplicate vote on server:', data.message);
+        return data.existingVote;
+      }
       throw new Error(`Failed to submit vote: ${response.statusText}`);
     }
 

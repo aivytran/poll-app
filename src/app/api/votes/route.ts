@@ -22,6 +22,7 @@ import prisma from '@/lib/prisma';
  *   - 200: Created vote details
  *   - 400: Missing or invalid optionId or userId
  *   - 404: Option or user not found
+ *   - 409: Duplicate vote
  *   - 500: Server error
  */
 export async function POST(request: Request) {
@@ -32,6 +33,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'optionId and userId are required' }, { status: 400 });
     }
 
+    // Check if vote already exists for this user and option
+    const existingVote = await prisma.vote.findFirst({
+      where: {
+        optionId,
+        userId,
+      },
+    });
+
+    if (existingVote) {
+      // Vote already exists, return conflict status
+      return NextResponse.json(
+        {
+          error: 'Duplicate vote',
+          message: 'A vote for this option by this user already exists',
+          existingVote,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Create new vote since it doesn't exist yet
     const vote = await prisma.vote.create({
       data: {
         optionId,

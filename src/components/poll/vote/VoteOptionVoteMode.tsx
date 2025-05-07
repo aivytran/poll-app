@@ -72,15 +72,26 @@ export default function VoteOptionVoteMode({
             await deleteVote(existingVoteId);
           }
         }
-        // Submit the new vote
-        await submitVote(optionId, userId);
+
+        // This prevents duplicate votes in case of race conditions
+        const doubleCheckVoteId = optionToUserVoteMap[optionId];
+        if (!doubleCheckVoteId) {
+          // Submit the new vote
+          await submitVote(optionId, userId);
+        } else {
+          console.log('Prevented duplicate vote submission');
+        }
       }
 
       onVoteChange();
     } catch (error) {
       console.error('Error processing vote:', error);
     } finally {
-      setProcessingOptionId(null);
+      // Wait a short delay before allowing new votes
+      // This prevents rapid clicks even after state update
+      setTimeout(() => {
+        setProcessingOptionId(null);
+      }, 300);
     }
   };
 
