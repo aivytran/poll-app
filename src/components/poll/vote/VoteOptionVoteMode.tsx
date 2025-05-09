@@ -1,7 +1,9 @@
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
-import { createPollOption, deleteVote, submitVote } from '@/lib/api';
 import { ListPlus, Pencil } from 'lucide-react';
 import { useMemo, useState } from 'react';
+
+import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
+import { createPollOption, deleteVote, submitVote } from '@/lib/api';
+
 import VoteAddOption from './VoteAddOption';
 import VoteOptionItem from './VoteOptionItem';
 import { PollOption } from './VoteOptions';
@@ -35,6 +37,7 @@ export default function VoteOptionVoteMode({
   onEnterEditMode,
 }: VoteOptionVoteModeProps) {
   const [newOption, setNewOption] = useState('');
+  const [processingOptionId, setProcessingOptionId] = useState<string | null>(null);
   const maxVotes = useMemo(
     () => options.reduce((max, option) => Math.max(max, option.votes?.length || 0), 0),
     [options]
@@ -47,6 +50,13 @@ export default function VoteOptionVoteMode({
 
   // Handle voting/unvoting for an option
   const handleVote = async (optionId: string) => {
+    // Prevent multiple rapid clicks on the same option
+    if (processingOptionId) {
+      return;
+    }
+
+    setProcessingOptionId(optionId);
+
     try {
       const voteId = optionToUserVoteMap[optionId];
 
@@ -62,13 +72,26 @@ export default function VoteOptionVoteMode({
             await deleteVote(existingVoteId);
           }
         }
-        // Submit the new vote
-        await submitVote(optionId, userId);
+
+        // This prevents duplicate votes in case of race conditions
+        const doubleCheckVoteId = optionToUserVoteMap[optionId];
+        if (!doubleCheckVoteId) {
+          // Submit the new vote
+          await submitVote(optionId, userId);
+        } else {
+          console.log('Prevented duplicate vote submission');
+        }
       }
 
       onVoteChange();
     } catch (error) {
       console.error('Error processing vote:', error);
+    } finally {
+      // Wait a short delay before allowing new votes
+      // This prevents rapid clicks even after state update
+      setTimeout(() => {
+        setProcessingOptionId(null);
+      }, 300);
     }
   };
 
@@ -100,7 +123,8 @@ export default function VoteOptionVoteMode({
             isVoted={!!optionToUserVoteMap[option.id]}
             maxVotes={maxVotes}
             hasUserName={hasUserName}
-            onClick={handleVote}
+            onClick={id => handleVote(id)}
+            isProcessing={processingOptionId === option.id}
           />
         ))}
       </CardContent>

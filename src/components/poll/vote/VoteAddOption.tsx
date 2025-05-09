@@ -1,5 +1,6 @@
-import { Button, Input } from '@/components/ui';
 import { Plus } from 'lucide-react';
+
+import { Button, Input } from '@/components/ui';
 
 interface VoteAddOptionProps {
   value: string;

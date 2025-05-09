@@ -1,9 +1,10 @@
 'use client';
-import { Badge, Button, Input } from '@/components/ui';
-import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Lock, Trash2 } from 'lucide-react';
+
+import { Badge, Button, Input } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 // Simplified option interface
 export interface DraggableOption {
@@ -35,8 +36,11 @@ export function PollOptionItem({
   isDragOverlay = false,
 }: PollOptionItemProps) {
   // Only use sortable hook if not in overlay mode
+  //
+  // TODO: Refactor this so we don't call it conditionally.
   const sortableProps = !isDragOverlay
-    ? useSortable({
+    ? // eslint-disable-next-line react-hooks/rules-of-hooks
+      useSortable({
         id: option.id,
         transition: {
           duration: 0,

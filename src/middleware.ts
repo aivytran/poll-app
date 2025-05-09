@@ -1,20 +1,47 @@
-import { NextResponse } from 'next/server';
+import { supabaseEdge } from '@/lib/supabase-edge';
 import type { NextRequest } from 'next/server';
-
+import { NextResponse } from 'next/server';
+/**
+ * Next.js Middleware
+ *
+ * This middleware runs in the Edge runtime and is responsible for
+ * creating user accounts for new visitors before they can access the app.
+ *
+ * IMPORTANT IMPLEMENTATION NOTES:
+ * - We use Supabase directly here instead of Prisma because Prisma doesn't work in Edge runtime
+ * - This is an exception to our usual pattern - most app code should continue using Prisma
+ * - We can't call our own API routes from middleware (would create circular dependencies)
+ */
 export async function middleware(request: NextRequest) {
-  const userId = request.cookies.get('user_id')?.value;
+  const userId = request.cookies.get('user_id');
 
   if (!userId) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/guest`);
-    const data = await res.json();
+    try {
+      // Create a guest user directly with Supabase
+      // NOTE: This operation bypasses Prisma for the specific Edge runtime constraint
+      const { data, error } = await supabaseEdge
+        .from('User')
+        .insert({ id: crypto.randomUUID(), isAuthenticated: false })
+        .select()
+        .single();
 
-    const response = NextResponse.next();
-    response.cookies.set('user_id', data.userId, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    });
+      if (error || !data) {
+        console.error('Error creating user in middleware:', error);
+        return NextResponse.next();
+      }
 
-    return response;
+      const response = NextResponse.next();
+      response.cookies.set('user_id', data.id, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Unexpected error in middleware:', error);
+      // Continue the request even if user creation fails
+      return NextResponse.next();
+    }
   }
 
   return NextResponse.next();

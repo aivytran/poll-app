@@ -1,94 +1,15 @@
-import prisma from '@/lib/prisma';
-import { Prisma, PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
 
 /**
  * Poll API Routes
  *
  * This file contains the API endpoints for poll-related operations:
- * - GET /api/polls/[pollId]: Fetch poll details including options and votes
  * - PATCH /api/polls/[pollId]: Update multiple aspects of a poll at once
  *
  * The endpoint requires a valid pollId parameter in the URL.
  */
-
-export const voteWithUserName = Prisma.defineExtension({
-  name: 'voteWithUserName',
-  result: {
-    vote: {
-      voterName: {
-        needs: { user: true } as any,
-        compute(vote: { user?: { name: string | null } }) {
-          return vote.user?.name || 'Anonymous';
-        },
-      },
-    },
-  },
-});
-
-/**
- * GET /api/polls/[pollId]
- *
- * Fetches a specific poll by its ID, including:
- * - Poll details (id, question, settings)
- * - All options for the poll
- * - Votes for each option with voter names
- *
- * The response includes a computed voterName field for each vote,
- * which is derived from the associated user's name.
- *
- * @param request - The incoming HTTP request
- * @param params - Route parameters containing the pollId
- * @returns
- *   - 200: Poll details with options and votes
- *   - 404: Poll not found
- *   - 500: Server error
- */
-export async function GET(_request: Request, { params }: { params: Promise<{ pollId: string }> }) {
-  const { pollId } = await params;
-
-  try {
-    const prisma = new PrismaClient().$extends(voteWithUserName);
-
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
-      select: {
-        id: true,
-        question: true,
-        allowMultipleVotes: true,
-        allowVotersToAddOptions: true,
-        adminToken: true,
-        createdAt: true,
-        options: {
-          select: {
-            id: true,
-            text: true,
-            order: true,
-            votes: {
-              select: {
-                id: true,
-                voterName: true,
-              },
-            },
-          },
-          orderBy: {
-            order: 'asc',
-          },
-        },
-      },
-    });
-
-    if (!poll) {
-      return NextResponse.json({ error: 'Poll not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(poll);
-  } catch (error) {
-    console.error('Error fetching poll:', error);
-
-    return NextResponse.json({ error: 'Failed to fetch poll' }, { status: 500 });
-  }
-}
 
 /**
  * PATCH /api/polls/[pollId]
@@ -98,16 +19,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pol
  * Preserves the option order specified in the request.
  *
  * @param request - The incoming HTTP request with options array and admin token
- * @param params - Route parameters containing the pollId
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: Successfully updated poll options
  *   - 400: Missing options
  *   - 401: Invalid admin token
  *   - 500: Server error
  */
-export async function PATCH(request: NextRequest, { params }: { params: { pollId: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ pollId: string }> }
+) {
+  const { pollId } = await params;
+
   try {
-    const { pollId } = await params;
     const { options, token } = await request.json();
 
     if (!options?.length) {

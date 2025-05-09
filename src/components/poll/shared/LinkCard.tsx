@@ -1,3 +1,6 @@
+import { CircleCheckBig, Copy } from 'lucide-react';
+import { ReactNode } from 'react';
+
 import {
   Button,
   Card,
@@ -7,8 +10,6 @@ import {
   CardTitle,
   Input,
 } from '@/components/ui';
-import { CircleCheckBig, Copy } from 'lucide-react';
-import { ReactNode } from 'react';
 
 interface LinkCardProps {
   title: string;

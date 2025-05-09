@@ -1,8 +1,11 @@
+import { useMemo, useState } from 'react';
+
 import { Button, CardContent, CardFooter } from '@/components/ui';
 import { updatePoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
-import { useMemo, useState } from 'react';
+
 import DragDropOptions, { DraggableOption } from '../shared/DragDropOptions';
+
 import VoteAddOption from './VoteAddOption';
 import { PollOption } from './VoteOptions';
 
@@ -58,7 +61,7 @@ export default function VoteOptionEditMode({
     const newOptions = updatedOptions
       .map(opt => {
         const original = editableOptions.find(o => o.id === opt.id);
-        if (!original) return null;
+        if (!original) {return null;}
         return {
           ...original,
           text: opt.value,
@@ -98,7 +101,7 @@ export default function VoteOptionEditMode({
 
   // Save changes to the server
   const handleSaveChanges = async () => {
-    if (!validateOptions()) return;
+    if (!validateOptions()) {return;}
 
     setIsSubmitting(true);
 

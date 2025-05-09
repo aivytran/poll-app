@@ -1,3 +1,6 @@
+import { X } from 'lucide-react';
+import { forwardRef } from 'react';
+
 import {
   Avatar,
   AvatarFallback,
@@ -12,8 +15,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui';
 import { getUserInitials } from '@/utils/pollUtils';
-import { X } from 'lucide-react';
-import { forwardRef } from 'react';
 
 // Types
 export type VoteInfo = { id: string; userId?: string; voterName?: string };
@@ -41,12 +42,20 @@ export function VoterAvatars({
   openVoterDrawer,
 }: {
   votes: VoteInfo[];
-  openVoterDrawer: (e: React.MouseEvent) => void;
+  openVoterDrawer?: (e: React.MouseEvent) => void;
 }) {
-  if (!votes.length) return null;
+  if (!votes.length) {
+    return null;
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (openVoterDrawer) {
+      openVoterDrawer(e);
+    }
+  };
 
   return (
-    <div className="flex items-center -space-x-1 group" onClick={openVoterDrawer}>
+    <div className="flex items-center -space-x-1 group" onClick={handleClick}>
       <TooltipProvider>
         {votes.slice(0, 3).map((vote, idx) => (
           <Tooltip key={vote.id || idx}>

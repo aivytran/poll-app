@@ -13,7 +13,7 @@ export async function createPoll(
   allowVotersToAddOptions: boolean = false
 ) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/polls`, {
+    const response = await fetch(`/api/polls`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -32,25 +32,6 @@ export async function createPoll(
     return await response.json();
   } catch (error) {
     console.error('Error creating poll:', error);
-    return null;
-  }
-}
-
-/**
- * Fetches a poll by its ID
- */
-export async function fetchPoll(pollId: string) {
-  try {
-    const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/polls/${pollId}`);
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch poll: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching poll:', error);
     return null;
   }
 }
@@ -102,14 +83,11 @@ export async function updatePoll(
  */
 export async function createPollOption(pollId: string, text: string, token?: string) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/polls/${pollId}/options`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, token }),
-      }
-    );
+    const response = await fetch(`/api/polls/${pollId}/options`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, token }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -128,42 +106,23 @@ export async function createPollOption(pollId: string, text: string, token?: str
 // =============================================================================
 
 /**
- * Fetches votes by user ID, optionally filtered by poll ID
- */
-export async function fetchVotesByUserId(userId: string, pollId?: string) {
-  try {
-    const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes`);
-    url.searchParams.append('userId', userId);
-
-    if (pollId) {
-      url.searchParams.append('pollId', pollId);
-    }
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user votes: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching user votes:', error);
-    return { votes: [] };
-  }
-}
-
-/**
  * Submits a new vote for an option
  */
 export async function submitVote(optionId: string, userId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes`, {
+    const response = await fetch(`/api/votes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ optionId, userId }),
     });
 
     if (!response.ok) {
+      // For 409 Conflict (duplicate vote), return success with the existing vote
+      if (response.status === 409) {
+        const data = await response.json();
+        console.warn('Prevented duplicate vote on server:', data.message);
+        return data.existingVote;
+      }
       throw new Error(`Failed to submit vote: ${response.statusText}`);
     }
 
@@ -179,7 +138,7 @@ export async function submitVote(optionId: string, userId: string) {
  */
 export async function deleteVote(voteId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/votes/${voteId}`, {
+    const response = await fetch(`/api/votes/${voteId}`, {
       method: 'DELETE',
     });
 
@@ -197,25 +156,6 @@ export async function deleteVote(voteId: string) {
 // =============================================================================
 // USER ENDPOINTS
 // =============================================================================
-
-/**
- * Fetches a user by ID
- */
-export async function fetchUser(userId: string) {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    return null;
-  }
-}
-
 /**
  * Updates a user's name
  */
@@ -224,7 +164,7 @@ export async function updateUserName(
   name: string
 ): Promise<{ id: string; name: string } | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`/api/users/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),

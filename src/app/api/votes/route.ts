@@ -1,64 +1,13 @@
 import { NextResponse } from 'next/server';
+
 import prisma from '@/lib/prisma';
 
 /**
  * Vote API Routes
  *
  * This file contains the API endpoints for vote-related operations:
- * - GET /api/votes: Fetch votes by user ID with optional filters
  * - POST /api/votes: Create a new vote
  */
-
-/**
- * GET /api/votes
- *
- * Fetches votes by user ID with optional filtering by poll ID.
- * This endpoint is used to get a user's votes for all polls or a specific poll.
- *
- * Query Parameters:
- * - userId: Filter votes by user ID
- * - pollId: Filter votes by poll ID
- *
- * @param request - The incoming HTTP request
- * @returns
- *   - 200: List of votes matching the filters
- *   - 400: Missing  userId
- *   - 500: Server error
- */
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
-  const pollId = searchParams.get('pollId');
-
-  if (!userId) {
-    return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-  }
-
-  try {
-    // Fetch votes for the given user, optionally filtering by pollId
-    // via nested option relation
-    const votes = await prisma.vote.findMany({
-      where: {
-        userId,
-        ...(pollId && {
-          option: {
-            pollId,
-          },
-        }),
-      },
-      select: {
-        id: true,
-        optionId: true,
-        createdAt: true,
-      },
-    });
-
-    return NextResponse.json({ votes });
-  } catch (error) {
-    console.error('Error fetching votes:', error);
-    return NextResponse.json({ error: 'Failed to fetch votes' }, { status: 500 });
-  }
-}
 
 /**
  * POST /api/votes
@@ -73,6 +22,7 @@ export async function GET(request: Request) {
  *   - 200: Created vote details
  *   - 400: Missing or invalid optionId or userId
  *   - 404: Option or user not found
+ *   - 409: Duplicate vote
  *   - 500: Server error
  */
 export async function POST(request: Request) {
@@ -83,6 +33,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'optionId and userId are required' }, { status: 400 });
     }
 
+    // Check if vote already exists for this user and option
+    const existingVote = await prisma.vote.findFirst({
+      where: {
+        optionId,
+        userId,
+      },
+    });
+
+    if (existingVote) {
+      // Vote already exists, return conflict status
+      return NextResponse.json(
+        {
+          error: 'Duplicate vote',
+          message: 'A vote for this option by this user already exists',
+          existingVote,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Create new vote since it doesn't exist yet
     const vote = await prisma.vote.create({
       data: {
         optionId,

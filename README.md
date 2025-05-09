@@ -62,10 +62,6 @@ The application provides the following REST API endpoints:
   - Returns voting and admin links for the created poll
   - Requires question, userId, and options in the request body
 
-- **GET `/api/polls/[pollId]`** - Fetch a poll with its options and votes
-
-  - Returns complete poll data including options and vote counts
-
 - **PATCH `/api/polls/[pollId]`** - Update poll options
   - Handles creating, updating, and deleting options in a single transaction
   - Requires admin token for authentication
@@ -77,10 +73,6 @@ The application provides the following REST API endpoints:
   - Primarily for voters to add options when allowVotersToAddOptions is enabled
 
 ### Votes
-
-- **GET `/api/users/[userId]/votes/[pollId]`** - Fetch all votes for a user on a specific poll
-
-  - Used to determine which options a user has already voted for
 
 - **POST `/api/votes`** - Submit a vote for a poll option
 

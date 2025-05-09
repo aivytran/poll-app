@@ -1,5 +1,7 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
 
 /**
  * Vote API Routes
@@ -17,7 +19,7 @@ import { NextResponse } from 'next/server';
  * This endpoint is used when a user clicks an option they've already voted for.
  *
  * @param request - The incoming HTTP request
- * @param params - Route parameters containing the voteId
+ * @param params - Promise containing route parameters
  * @returns
  *   - 200: Successfully deleted vote
  *   - 404: Vote not found
@@ -30,9 +32,7 @@ export async function DELETE(
   const { voteId } = await params;
 
   try {
-    const prisma = new PrismaClient();
-
-    // Delete the vote
+    // Delete the vote using the singleton Prisma client
     await prisma.vote.delete({
       where: { id: voteId },
     });
