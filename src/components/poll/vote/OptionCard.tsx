@@ -11,7 +11,6 @@ interface OptionCardProps {
   options: PollOption[];
   allowMultipleVotes: boolean;
   allowVotersToAddOptions: boolean;
-  userId: string;
   userVotes: UserVote[];
   hasUserName: boolean;
   onVoteChange: () => void;
@@ -24,7 +23,6 @@ export function OptionCard({
   options,
   allowMultipleVotes,
   allowVotersToAddOptions,
-  userId,
   userVotes,
   hasUserName,
   onVoteChange,
@@ -58,7 +56,6 @@ export function OptionCard({
           />
         ) : (
           <OptionCardVoteMode
-            userId={userId}
             pollId={pollId}
             options={options}
             userVotes={userVotes}

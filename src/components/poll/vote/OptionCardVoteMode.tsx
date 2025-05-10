@@ -5,11 +5,11 @@ import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/
 import { createPollOption, deleteVote, submitVote } from '@/lib/api';
 import { PollOption, UserVote } from '@/types/shared';
 
+import { useAuth } from '@/context/AuthContext';
 import { AddOptionInput } from './AddOptionInput';
 import { OptionItemCard } from './OptionItemCard';
 
 interface OptionCardVoteModeProps {
-  userId: string;
   pollId: string;
   options: PollOption[];
   userVotes: UserVote[];
@@ -22,7 +22,6 @@ interface OptionCardVoteModeProps {
 }
 
 export function OptionCardVoteMode({
-  userId,
   pollId,
   options,
   userVotes,
@@ -56,6 +55,7 @@ export function OptionCardVoteMode({
 
     try {
       const voteId = optionToUserVoteMap[optionId];
+      const { userId } = useAuth();
 
       if (voteId) {
         // User already voted for this option - remove the vote

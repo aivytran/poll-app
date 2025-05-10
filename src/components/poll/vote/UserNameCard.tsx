@@ -1,20 +1,20 @@
 'use client';
 
-import { Edit, User } from 'lucide-react';
+import { Edit, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button, Card, CardContent, Input } from '@/components/ui';
 import { updateUserName } from '@/lib/api';
+import { User } from '@/types/shared';
 
 interface UserNameCardProps {
-  userId: string;
-  initialName: string;
+  user: User;
   onNameUpdated?: () => void;
 }
 
-export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCardProps) {
-  const [name, setName] = useState(initialName || '');
-  const [isEditing, setIsEditing] = useState(!initialName);
+export function UserNameCard({ user, onNameUpdated }: UserNameCardProps) {
+  const [name, setName] = useState(user.name || '');
+  const [isEditing, setIsEditing] = useState(!user.name);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -25,7 +25,7 @@ export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCar
     }
 
     try {
-      const result = await updateUserName(userId, name.trim());
+      const result = await updateUserName(user.id, name.trim());
       if (result) {
         setIsEditing(false);
         onNameUpdated?.();
@@ -36,7 +36,7 @@ export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCar
   };
 
   const handleCancel = () => {
-    setName(initialName || '');
+    setName(user.name || '');
     setIsEditing(false);
   };
 
@@ -45,7 +45,7 @@ export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCar
       <CardContent>
         {isEditing ? (
           <form onSubmit={handleSubmit} className="flex items-center">
-            <User className="h-5 w-5 mr-2 flex-shrink-0" />
+            <UserIcon className="h-5 w-5 mr-2 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <Input
                 id="username"
@@ -60,7 +60,7 @@ export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCar
             <Button type="submit" disabled={!name.trim()} className="flex-shrink-0 ml-2">
               Save
             </Button>
-            {initialName && (
+            {user.name && (
               <Button
                 type="button"
                 variant="secondary"
@@ -74,7 +74,7 @@ export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCar
         ) : (
           <div className="flex items-center justify-between h-9">
             <div className="flex items-center">
-              <User className="h-5 w-5 text-primary flex-shrink-0" />
+              <UserIcon className="h-5 w-5 text-primary flex-shrink-0" />
               <div className="text-md font-semibold text-foreground ml-2">{name}</div>
             </div>
             <Button

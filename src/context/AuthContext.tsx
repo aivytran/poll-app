@@ -4,19 +4,19 @@ import Cookies from 'js-cookie';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type AuthContextType = {
-  userId: string | null;
+  userId: string;
   login: (id: string) => void;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  userId: null,
+  userId: '',
   login: () => {},
   logout: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>('');
 
   useEffect(() => {
     const cookieId = Cookies.get('user_id');
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     Cookies.remove('user_id');
-    setUserId(null);
+    setUserId('');
   };
 
   return <AuthContext.Provider value={{ userId, login, logout }}>{children}</AuthContext.Provider>;

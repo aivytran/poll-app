@@ -4,14 +4,14 @@ import { useRouter } from 'next/navigation';
 
 import { PageHeader } from '../../layout';
 
-import { PollOption, UserVote } from '@/types/shared';
+import { PollOption, User, UserVote } from '@/types/shared';
 import { OptionCard } from './OptionCard';
 import { QuestionCard } from './QuestionCard';
 import { UserNameCard } from './UserNameCard';
 
 interface PollContainerProps {
-  initialUser: { id: string; name: string } | null;
-  initialPoll: {
+  user: User;
+  poll: {
     id: string;
     question: string;
     allowMultipleVotes: boolean;
@@ -19,37 +19,26 @@ interface PollContainerProps {
     adminToken: string;
     options: PollOption[];
   };
-  initialUserVotes: UserVote[];
+  userVotes: UserVote[];
   token: string | null;
 }
 
-export function PollContainer({
-  initialUser,
-  initialPoll,
-  initialUserVotes,
-  token,
-}: PollContainerProps) {
+export function PollContainer({ user, poll, userVotes, token }: PollContainerProps) {
   const router = useRouter();
 
-  const hasUserName = !!initialUser!.name;
-  const responsesCount = initialPoll.options.reduce(
-    (sum, option) => sum + (option.votes?.length || 0),
-    0
-  );
+  const hasUserName = !!user!.name;
+  const responsesCount = poll.options.reduce((sum, option) => sum + (option.votes?.length || 0), 0);
 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        title={
-          initialPoll.adminToken === token ? 'Vote and Manage Your Poll' : 'Vote for this Poll'
-        }
-        subtitle={initialPoll.adminToken === token ? 'Admin access enabled' : undefined}
+        title={poll.adminToken === token ? 'Vote and Manage Your Poll' : 'Vote for this Poll'}
+        subtitle={poll.adminToken === token ? 'Admin access enabled' : undefined}
       />
 
       {/* Username Input Section */}
       <UserNameCard
-        userId={initialUser!.id}
-        initialName={initialUser!.name || ''}
+        user={user}
         onNameUpdated={() => {
           router.refresh();
         }}
@@ -57,25 +46,24 @@ export function PollContainer({
 
       {/* Poll Question Section */}
       <QuestionCard
-        question={initialPoll.question}
+        question={poll.question}
         responsesCount={responsesCount}
-        allowMultipleVotes={initialPoll.allowMultipleVotes}
+        allowMultipleVotes={poll.allowMultipleVotes}
       />
 
       {/* Options Section */}
       <OptionCard
-        options={initialPoll.options}
-        allowMultipleVotes={initialPoll.allowMultipleVotes}
-        allowVotersToAddOptions={initialPoll.allowVotersToAddOptions}
-        userId={initialUser!.id}
-        userVotes={initialUserVotes}
+        options={poll.options}
+        allowMultipleVotes={poll.allowMultipleVotes}
+        allowVotersToAddOptions={poll.allowVotersToAddOptions}
+        userVotes={userVotes}
         hasUserName={hasUserName}
         onVoteChange={() => {
           router.refresh();
         }}
-        isAdmin={initialPoll.adminToken === token}
+        isAdmin={poll.adminToken === token}
         token={token || ''}
-        pollId={initialPoll.id}
+        pollId={poll.id}
       />
     </div>
   );

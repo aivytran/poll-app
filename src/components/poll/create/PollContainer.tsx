@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { createPoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
 
+import { useAuth } from '@/context/AuthContext';
 import { PollOption } from '@/types/shared';
 import { OptionCard } from './OptionCard';
 import { PollCreationSuccessPage } from './PollCreationSuccessPage';
@@ -15,7 +16,7 @@ import { SettingCard } from './SettingCard';
 /**
  * Container for creating a new poll with options and settings
  */
-export function PollContainer({ userId }: { userId: string }) {
+export function PollContainer() {
   // Form state
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState<PollOption[]>([
@@ -49,6 +50,8 @@ export function PollContainer({ userId }: { userId: string }) {
     if (!validateForm()) {
       return;
     }
+
+    const { userId } = useAuth();
 
     setIsSubmitting(true);
     try {

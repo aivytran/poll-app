@@ -29,12 +29,9 @@ export default async function PollPage({
     return <div className="text-red-600">Poll not found</div>;
   }
 
-  return (
-    <PollContainer
-      initialUser={user}
-      initialPoll={poll}
-      initialUserVotes={userVotesData.votes}
-      token={token}
-    />
-  );
+  if (!user) {
+    return <div className="text-red-600">User not found</div>;
+  }
+
+  return <PollContainer user={user} poll={poll} userVotes={userVotesData.votes} token={token} />;
 }
