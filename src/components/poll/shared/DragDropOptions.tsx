@@ -10,11 +10,12 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { useState } from 'react';
 
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
-import { DragDropOptionItem, DragDropOptionItemCard } from './DragDropOptionItemCard';
+import { PollOption } from '@/types/shared';
+import { DragDropOptionItemCard } from './DragDropOptionItemCard';
 
 interface DragDropOptionsProps {
-  options: DragDropOptionItem[];
-  onChange: (options: DragDropOptionItem[]) => void;
+  options: PollOption[];
+  onChange: (options: PollOption[]) => void;
   onRemove: (id: string) => void;
   isOptionReadOnly?: (id: string) => boolean;
   isOptionDeletable?: (id: string) => boolean;
@@ -59,7 +60,7 @@ export function DragDropOptions({
 
   // Update option text
   const handleSingleOptionChange = (id: string, value: string) => {
-    onChange(options.map(option => (option.id === id ? { ...option, value } : option)));
+    onChange(options.map(option => (option.id === id ? { ...option, text: value } : option)));
   };
 
   return (
@@ -79,7 +80,7 @@ export function DragDropOptions({
               isReadOnly={isOptionReadOnly(option.id)}
               isDeletable={isOptionDeletable(option.id)}
               showVotes={showVotes}
-              showError={showError && !option.value.trim()}
+              showError={showError && !option.text.trim()}
             />
           ))}
         </div>

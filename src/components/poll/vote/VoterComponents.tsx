@@ -14,10 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui';
+import { Vote } from '@/types/shared';
 import { getUserInitials } from '@/utils/pollUtils';
-
-// Types
-export type VoteInfo = { id: string; userId?: string; voterName?: string };
 
 // Voter avatar component with forwarded ref for tooltip
 export const VoterAvatar = forwardRef<HTMLDivElement, { text: string }>(
@@ -41,7 +39,7 @@ export function VoterAvatars({
   votes,
   openVoterDrawer,
 }: {
-  votes: VoteInfo[];
+  votes: Vote[];
   openVoterDrawer?: (e: React.MouseEvent) => void;
 }) {
   if (!votes.length) {
@@ -97,7 +95,7 @@ export function VoterDrawer({
 }: {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  votes: VoteInfo[];
+  votes: Vote[];
   optionText: string;
 }) {
   return (

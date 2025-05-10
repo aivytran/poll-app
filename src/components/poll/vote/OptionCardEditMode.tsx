@@ -1,13 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { Button, CardContent, CardFooter } from '@/components/ui';
 import { updatePoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
 
-import { DragDropOptionItem } from '../shared/DragDropOptionItemCard';
+import { PollOption } from '@/types/shared';
 import { DragDropOptions } from '../shared/DragDropOptions';
 import { AddOptionInput } from './AddOptionInput';
-import { PollOption } from './OptionCard';
 
 interface OptionCardEditModeProps {
   pollId: string;
@@ -37,17 +36,6 @@ export function OptionCardEditMode({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState(false);
 
-  // Convert PollOption[] to DraggableOption[] for the drag-drop component
-  const draggableOptions = useMemo(
-    () =>
-      editableOptions.map(option => ({
-        id: option.id,
-        value: option.text,
-        votes: option.votes,
-      })),
-    [editableOptions]
-  );
-
   // Validation function
   const validateOptions = (): boolean => {
     const hasEmptyOptions = editableOptions.some(option => !option.text.trim());
@@ -56,7 +44,7 @@ export function OptionCardEditMode({
   };
 
   // Option handlers
-  const handleOptionsChange = (updatedOptions: DragDropOptionItem[]) => {
+  const handleOptionsChange = (updatedOptions: PollOption[]) => {
     // Map DraggableOption back to PollOption
     const newOptions = updatedOptions
       .map(opt => {
@@ -66,7 +54,7 @@ export function OptionCardEditMode({
         }
         return {
           ...original,
-          text: opt.value,
+          text: opt.text,
         };
       })
       .filter(Boolean) as PollOption[];
@@ -147,7 +135,7 @@ export function OptionCardEditMode({
     <>
       <CardContent className="w-full space-y-3 mb-3 px-2 sm:px-4">
         <DragDropOptions
-          options={draggableOptions}
+          options={editableOptions}
           onChange={handleOptionsChange}
           onRemove={handleRemoveOption}
           isOptionDeletable={isOptionDeletable}

@@ -2,30 +2,17 @@
 import { useState } from 'react';
 
 import { Card } from '@/components/ui';
-
+import { PollOption, UserVote } from '@/types/shared';
 import { OptionCardEditMode } from './OptionCardEditMode';
 import { OptionCardStatusMessage } from './OptionCardStatusMessage';
 import { OptionCardVoteMode } from './OptionCardVoteMode';
 
-// Proper type definition with all fields
-export interface PollOption {
-  id: string;
-  text: string;
-  votes?: { id: string; userId?: string; voterName?: string }[];
-  order?: number;
-  isNew?: boolean;
-}
-
-// Props interface for better type safety
 interface OptionCardProps {
   options: PollOption[];
   allowMultipleVotes: boolean;
   allowVotersToAddOptions: boolean;
   userId: string;
-  userVotes: {
-    id: string;
-    optionId: string;
-  }[];
+  userVotes: UserVote[];
   hasUserName: boolean;
   onVoteChange: () => void;
   isAdmin?: boolean;

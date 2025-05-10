@@ -4,12 +4,13 @@ import { Badge, Card, CardContent, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { calculateProgressPercentage } from '@/utils/pollUtils';
 
-import { VoterAvatars, VoterDrawer, type VoteInfo } from './VoterComponents';
+import { Vote } from '@/types/shared';
+import { VoterAvatars, VoterDrawer } from './VoterComponents';
 
 interface OptionItemCardProps {
   id: string;
   text: string;
-  votes?: VoteInfo[];
+  votes?: Vote[];
   isVoted: boolean;
   maxVotes: number;
   hasUserName: boolean;

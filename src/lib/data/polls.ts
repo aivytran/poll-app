@@ -2,7 +2,7 @@ import { voteWithUserName } from '@/lib/extensions';
 import prisma from '@/lib/prisma';
 import 'server-only';
 
-export interface PollData {
+interface PollData {
   id: string;
   question: string;
   allowMultipleVotes: boolean;
@@ -20,12 +20,12 @@ export interface PollData {
   }[];
 }
 
-export interface UserData {
+interface UserData {
   id: string;
   name: string;
 }
 
-export interface VoteData {
+interface VoteData {
   votes: {
     id: string;
     optionId: string;

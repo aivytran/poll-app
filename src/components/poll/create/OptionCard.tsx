@@ -10,11 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui';
+import { PollOption } from '@/types/shared';
 import { uniqueId } from '@/utils/pollUtils';
 
 interface OptionCardProps {
-  options: Array<{ id: string; value: string }>;
-  setOptions: (options: Array<{ id: string; value: string }>) => void;
+  options: PollOption[];
+  setOptions: (options: PollOption[]) => void;
   hasOptionError: boolean;
   setOptionError: (hasError: boolean) => void;
 }
@@ -29,7 +30,7 @@ export function OptionCard({
   setOptionError,
 }: OptionCardProps) {
   const handleAddOption = () => {
-    setOptions([...options, { id: uniqueId(), value: '' }]);
+    setOptions([...options, { id: uniqueId(), text: '' }]);
   };
 
   const handleRemoveOption = (id: string) => {
@@ -39,10 +40,10 @@ export function OptionCard({
     setOptions(options.filter(option => option.id !== id));
   };
 
-  const handleOptionChange = (newOptions: Array<{ id: string; value: string }>) => {
+  const handleOptionChange = (newOptions: PollOption[]) => {
     setOptions(newOptions);
     // Clear validation error if all options now have values
-    if (hasOptionError && !newOptions.some(opt => !opt.value.trim())) {
+    if (hasOptionError && !newOptions.some(opt => !opt.text.trim())) {
       setOptionError(false);
     }
   };

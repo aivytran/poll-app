@@ -3,19 +3,16 @@ import { useMemo, useState } from 'react';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
 import { createPollOption, deleteVote, submitVote } from '@/lib/api';
+import { PollOption, UserVote } from '@/types/shared';
 
 import { AddOptionInput } from './AddOptionInput';
-import { PollOption } from './OptionCard';
 import { OptionItemCard } from './OptionItemCard';
 
 interface OptionCardVoteModeProps {
   userId: string;
   pollId: string;
   options: PollOption[];
-  userVotes: {
-    id: string;
-    optionId: string;
-  }[];
+  userVotes: UserVote[];
   allowVotersToAddOptions: boolean;
   allowMultipleVotes: boolean;
   hasUserName: boolean;

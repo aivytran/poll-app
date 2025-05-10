@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { createPoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
 
+import { PollOption } from '@/types/shared';
 import { OptionCard } from './OptionCard';
 import { PollCreationSuccessPage } from './PollCreationSuccessPage';
 import { QuestionCard } from './QuestionCard';
@@ -17,9 +18,9 @@ import { SettingCard } from './SettingCard';
 export function PollContainer({ userId }: { userId: string }) {
   // Form state
   const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState([
-    { id: uniqueId(), value: '' },
-    { id: uniqueId(), value: '' },
+  const [options, setOptions] = useState<PollOption[]>([
+    { id: uniqueId(), text: '' },
+    { id: uniqueId(), text: '' },
   ]);
   const [allowMultipleVotes, setAllowMultipleVotes] = useState(false);
   const [allowVotersToAddOptions, setAllowVotersToAddOptions] = useState(false);
@@ -35,7 +36,7 @@ export function PollContainer({ userId }: { userId: string }) {
   // Validation logic extracted to separate function
   const validateForm = () => {
     const hasEmptyQuestion = !question.trim();
-    const hasEmptyOptions = options.some(option => !option.value.trim());
+    const hasEmptyOptions = options.some(option => !option.text.trim());
 
     setQuestionError(hasEmptyQuestion);
     setOptionError(hasEmptyOptions);
@@ -51,7 +52,7 @@ export function PollContainer({ userId }: { userId: string }) {
 
     setIsSubmitting(true);
     try {
-      const optionValues = options.map(o => o.value);
+      const optionValues = options.map(o => o.text);
       const response = await createPoll(
         question,
         userId,
@@ -77,8 +78,8 @@ export function PollContainer({ userId }: { userId: string }) {
   const handleCreateAnother = () => {
     setQuestion('');
     setOptions([
-      { id: uniqueId(), value: '' },
-      { id: uniqueId(), value: '' },
+      { id: uniqueId(), text: '' },
+      { id: uniqueId(), text: '' },
     ]);
     setAllowMultipleVotes(false);
     setAllowVotersToAddOptions(false);

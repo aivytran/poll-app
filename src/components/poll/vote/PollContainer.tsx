@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { PageHeader } from '../../layout';
 
+import { PollOption, UserVote } from '@/types/shared';
 import { OptionCard } from './OptionCard';
 import { QuestionCard } from './QuestionCard';
 import { UserNameCard } from './UserNameCard';
@@ -16,20 +17,9 @@ interface PollContainerProps {
     allowMultipleVotes: boolean;
     allowVotersToAddOptions: boolean;
     adminToken: string;
-    options: {
-      id: string;
-      text: string;
-      order: number;
-      votes: {
-        id: string;
-        voterName: string;
-      }[];
-    }[];
+    options: PollOption[];
   };
-  initialUserVotes: {
-    id: string;
-    optionId: string;
-  }[];
+  initialUserVotes: UserVote[];
   token: string | null;
 }
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { LinkCard } from '@/components/poll/shared/LinkCard';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
+import { PollOption } from '@/types/shared';
 
 /**
  * Component shown after a poll is successfully created
@@ -10,7 +11,7 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '
 
 interface PollCreationSuccessPageProps {
   question: string;
-  options: Array<{ id: string; value: string }>;
+  options: PollOption[];
   allowMultipleVotes: boolean;
   allowVotersToAddOptions: boolean;
   resultLinks: { voteLink: string; adminLink: string };
@@ -66,7 +67,7 @@ export function PollCreationSuccessPage({
                   {index + 1}
                 </span>
                 <div className="w-full">
-                  <Input value={option.value} readOnly />
+                  <Input value={option.text} readOnly />
                 </div>
               </div>
             ))}

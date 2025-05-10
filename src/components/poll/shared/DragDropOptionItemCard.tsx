@@ -5,17 +5,10 @@ import { GripVertical, Lock, Trash2 } from 'lucide-react';
 
 import { Badge, Button, Input } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { PollOption } from '@/types/shared';
 
-// Simplified option interface
-export interface DragDropOptionItem {
-  id: string;
-  value: string;
-  votes?: { id: string; userId?: string; voterName?: string }[];
-}
-
-// Simplified props
-export interface DragDropOptionItemCardProps {
-  option: DragDropOptionItem;
+interface DragDropOptionItemCardProps {
+  option: PollOption;
   onChange?: (id: string, value: string) => void;
   onRemove?: (id: string) => void;
   isReadOnly?: boolean;
@@ -83,11 +76,11 @@ export function DragDropOptionItemCard({
       {/* Option input field */}
       <div className="relative flex-grow">
         <Input
-          value={option.value}
+          value={option.text}
           onChange={e => !isReadOnly && onChange?.(option.id, e.target.value)}
           disabled={isReadOnly || isDragOverlay}
           placeholder="Enter an option"
-          error={showError && !option.value.trim()}
+          error={showError && !option.text.trim()}
           className={cn('w-full', isReadOnly && 'pr-8')}
           onClick={e => e.stopPropagation()}
           onTouchStart={e => e.stopPropagation()}
