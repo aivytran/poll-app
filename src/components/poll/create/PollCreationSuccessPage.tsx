@@ -8,7 +8,7 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '
  * Component shown after a poll is successfully created
  */
 
-interface CreatePollSuccessProps {
+interface PollCreationSuccessPageProps {
   question: string;
   options: Array<{ id: string; value: string }>;
   allowMultipleVotes: boolean;
@@ -17,19 +17,21 @@ interface CreatePollSuccessProps {
   onCreateAnother: () => void;
 }
 
-export function CreatePollSuccess({
+export function PollCreationSuccessPage({
   question,
   options,
   allowMultipleVotes,
   allowVotersToAddOptions,
   resultLinks,
   onCreateAnother,
-}: CreatePollSuccessProps) {
+}: PollCreationSuccessPageProps) {
   const [votingCopied, setVotingCopied] = useState(false);
   const [adminCopied, setAdminCopied] = useState(false);
 
   const handleCopyLink = (linkType: 'voting' | 'admin') => {
-    if (!resultLinks) {return;}
+    if (!resultLinks) {
+      return;
+    }
 
     const link = linkType === 'voting' ? resultLinks.voteLink : resultLinks.adminLink;
     const setStateFn = linkType === 'voting' ? setVotingCopied : setAdminCopied;

@@ -9,7 +9,7 @@ import {
   Checkbox,
 } from '@/components/ui';
 
-interface CreateSettingsProps {
+interface SettingCardProps {
   allowMultipleVotes: boolean;
   allowVotersToAddOptions: boolean;
   setAllowMultipleVotes: (value: boolean) => void;
@@ -19,12 +19,12 @@ interface CreateSettingsProps {
 /**
  * Component for managing poll settings
  */
-export function CreateSettings({
+export function SettingCard({
   allowMultipleVotes,
   allowVotersToAddOptions,
   setAllowMultipleVotes: setAllowMultipleVotes,
   setAllowVotersToAddOptions: setAllowVotersToAddOptions,
-}: CreateSettingsProps) {
+}: SettingCardProps) {
   return (
     <Card>
       <CardHeader>

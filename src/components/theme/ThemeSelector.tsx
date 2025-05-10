@@ -31,7 +31,7 @@ const themes: { id: BackgroundTheme; name: string; icon: string }[] = [
   },
 ];
 
-export default function ThemeSelector() {
+export function ThemeSelector() {
   const { backgroundTheme, setBackgroundTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 

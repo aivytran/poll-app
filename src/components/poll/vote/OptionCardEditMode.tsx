@@ -4,12 +4,12 @@ import { Button, CardContent, CardFooter } from '@/components/ui';
 import { updatePoll } from '@/lib/api';
 import { uniqueId } from '@/utils/pollUtils';
 
-import DragDropOptions, { DraggableOption } from '../shared/DragDropOptions';
+import { DragDropOptionItem } from '../shared/DragDropOptionItemCard';
+import { DragDropOptions } from '../shared/DragDropOptions';
+import { AddOptionInput } from './AddOptionInput';
+import { PollOption } from './OptionCard';
 
-import VoteAddOption from './VoteAddOption';
-import { PollOption } from './VoteOptions';
-
-interface VoteOptionEditModeProps {
+interface OptionCardEditModeProps {
   pollId: string;
   token: string;
   initialOptions: PollOption[];
@@ -24,13 +24,13 @@ type OptionForUpdate = {
   order: number;
 };
 
-export default function VoteOptionEditMode({
+export function OptionCardEditMode({
   pollId,
   token,
   initialOptions,
   onSaveComplete,
   onCancelEdit,
-}: VoteOptionEditModeProps) {
+}: OptionCardEditModeProps) {
   // Form state
   const [editableOptions, setEditableOptions] = useState<PollOption[]>(initialOptions);
   const [newOptionText, setNewOptionText] = useState('');
@@ -56,12 +56,14 @@ export default function VoteOptionEditMode({
   };
 
   // Option handlers
-  const handleOptionsChange = (updatedOptions: DraggableOption[]) => {
+  const handleOptionsChange = (updatedOptions: DragDropOptionItem[]) => {
     // Map DraggableOption back to PollOption
     const newOptions = updatedOptions
       .map(opt => {
         const original = editableOptions.find(o => o.id === opt.id);
-        if (!original) {return null;}
+        if (!original) {
+          return null;
+        }
         return {
           ...original,
           text: opt.value,
@@ -101,7 +103,9 @@ export default function VoteOptionEditMode({
 
   // Save changes to the server
   const handleSaveChanges = async () => {
-    if (!validateOptions()) {return;}
+    if (!validateOptions()) {
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -152,7 +156,7 @@ export default function VoteOptionEditMode({
           showError={validationError}
         />
 
-        <VoteAddOption
+        <AddOptionInput
           value={newOptionText}
           onValueChange={setNewOptionText}
           onAddOption={handleAddOption}

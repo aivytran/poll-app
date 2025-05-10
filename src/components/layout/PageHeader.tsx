@@ -9,7 +9,7 @@ export interface PageHeaderProps {
   subtitle?: string;
 }
 
-export default function PageHeader({ title, subtitle }: PageHeaderProps) {
+export function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
     <Card className="border-none shadow-none bg-transparent py-0">
       <CardHeader className="flex flex-col items-center">

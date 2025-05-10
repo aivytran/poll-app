@@ -10,12 +10,11 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { useState } from 'react';
 
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
-
-import { DraggableOption, PollOptionItem } from './PollOptionItem';
+import { DragDropOptionItem, DragDropOptionItemCard } from './DragDropOptionItemCard';
 
 interface DragDropOptionsProps {
-  options: DraggableOption[];
-  onChange: (options: DraggableOption[]) => void;
+  options: DragDropOptionItem[];
+  onChange: (options: DragDropOptionItem[]) => void;
   onRemove: (id: string) => void;
   isOptionReadOnly?: (id: string) => boolean;
   isOptionDeletable?: (id: string) => boolean;
@@ -23,7 +22,7 @@ interface DragDropOptionsProps {
   showError?: boolean;
 }
 
-function DragDropOptions({
+export function DragDropOptions({
   options,
   onChange,
   onRemove,
@@ -72,7 +71,7 @@ function DragDropOptions({
       <SortableContext items={options} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
           {options.map(option => (
-            <PollOptionItem
+            <DragDropOptionItemCard
               key={option.id}
               option={option}
               onChange={handleSingleOptionChange}
@@ -89,7 +88,7 @@ function DragDropOptions({
       {/* Drag overlay - what you see while dragging */}
       <DragOverlay>
         {activeOption && (
-          <PollOptionItem
+          <DragDropOptionItemCard
             option={activeOption}
             isReadOnly={isOptionReadOnly(activeOption.id)}
             isDeletable={isOptionDeletable(activeOption.id)}
@@ -102,6 +101,3 @@ function DragDropOptions({
     </DndContext>
   );
 }
-
-export default DragDropOptions;
-export type { DraggableOption } from './PollOptionItem';

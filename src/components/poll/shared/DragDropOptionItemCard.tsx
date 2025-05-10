@@ -7,15 +7,15 @@ import { Badge, Button, Input } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 // Simplified option interface
-export interface DraggableOption {
+export interface DragDropOptionItem {
   id: string;
   value: string;
   votes?: { id: string; userId?: string; voterName?: string }[];
 }
 
 // Simplified props
-export interface PollOptionItemProps {
-  option: DraggableOption;
+export interface DragDropOptionItemCardProps {
+  option: DragDropOptionItem;
   onChange?: (id: string, value: string) => void;
   onRemove?: (id: string) => void;
   isReadOnly?: boolean;
@@ -25,7 +25,7 @@ export interface PollOptionItemProps {
   isDragOverlay?: boolean;
 }
 
-export function PollOptionItem({
+export function DragDropOptionItemCard({
   option,
   onChange,
   onRemove,
@@ -34,7 +34,7 @@ export function PollOptionItem({
   showVotes = false,
   showError = false,
   isDragOverlay = false,
-}: PollOptionItemProps) {
+}: DragDropOptionItemCardProps) {
   // Only use sortable hook if not in overlay mode
   //
   // TODO: Refactor this so we don't call it conditionally.

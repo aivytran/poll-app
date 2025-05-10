@@ -6,6 +6,6 @@ const ParticlesBackground = dynamic(() => import('./ParticlesBackground'), {
   ssr: false,
 });
 
-export default function BackgroundWrapper() {
+export function BackgroundWrapper() {
   return <ParticlesBackground />;
 }

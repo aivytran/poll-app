@@ -1,4 +1,4 @@
-import BackgroundWrapper from './BackgroundWrapper';
-import PageHeader from './PageHeader';
+import { BackgroundWrapper } from './BackgroundWrapper';
+import { PageHeader } from './PageHeader';
 
 export { BackgroundWrapper, PageHeader };

@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui';
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
 
-interface CreateQuestionProps {
+interface QuestionCardProps {
   question: string;
   hasQuestionError: boolean;
   setQuestion: React.Dispatch<React.SetStateAction<string>>;
@@ -14,12 +14,12 @@ interface CreateQuestionProps {
 /**
  * Component for the poll question input
  */
-export function CreateQuestion({
+export function QuestionCard({
   question,
   hasQuestionError,
   setQuestion,
   setQuestionError,
-}: CreateQuestionProps) {
+}: QuestionCardProps) {
   // Handle input change and validate
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

@@ -2,19 +2,19 @@ import { CheckCircle, Edit, Info, MousePointer } from 'lucide-react';
 
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui';
 
-interface VoteStatusMessageProps {
+interface OptionCardStatusMessageProps {
   hasUserName: boolean;
   isEditMode: boolean;
   hasVoted: boolean;
   allowMultipleVotes: boolean;
 }
 
-export default function VoteStatusMessage({
+export function OptionCardStatusMessage({
   hasUserName,
   isEditMode,
   hasVoted,
   allowMultipleVotes,
-}: VoteStatusMessageProps) {
+}: OptionCardStatusMessageProps) {
   const getStatusMessage = () => {
     if (!hasUserName) {
       return {

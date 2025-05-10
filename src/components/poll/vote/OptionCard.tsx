@@ -3,9 +3,9 @@ import { useState } from 'react';
 
 import { Card } from '@/components/ui';
 
-import VoteOptionEditMode from './VoteOptionEditMode';
-import VoteOptionVoteMode from './VoteOptionVoteMode';
-import VoteStatusMessage from './VoteStatusMessage';
+import { OptionCardEditMode } from './OptionCardEditMode';
+import { OptionCardStatusMessage } from './OptionCardStatusMessage';
+import { OptionCardVoteMode } from './OptionCardVoteMode';
 
 // Proper type definition with all fields
 export interface PollOption {
@@ -17,7 +17,7 @@ export interface PollOption {
 }
 
 // Props interface for better type safety
-interface VoteOptionsProps {
+interface OptionCardProps {
   options: PollOption[];
   allowMultipleVotes: boolean;
   allowVotersToAddOptions: boolean;
@@ -33,7 +33,7 @@ interface VoteOptionsProps {
   pollId?: string;
 }
 
-export default function VoteOptions({
+export function OptionCard({
   options,
   allowMultipleVotes,
   allowVotersToAddOptions,
@@ -44,14 +44,14 @@ export default function VoteOptions({
   isAdmin = false,
   token = '',
   pollId = '',
-}: VoteOptionsProps) {
+}: OptionCardProps) {
   // UI state
   const [isEditMode, setIsEditMode] = useState(false);
 
   return (
     <div className="w-full" data-poll-id={pollId}>
       <Card className="w-full">
-        <VoteStatusMessage
+        <OptionCardStatusMessage
           hasUserName={hasUserName}
           isEditMode={isEditMode}
           hasVoted={Object.keys(userVotes).length > 0}
@@ -59,7 +59,7 @@ export default function VoteOptions({
         />
 
         {isEditMode ? (
-          <VoteOptionEditMode
+          <OptionCardEditMode
             pollId={pollId}
             token={token}
             initialOptions={options}
@@ -70,7 +70,7 @@ export default function VoteOptions({
             onCancelEdit={() => setIsEditMode(false)}
           />
         ) : (
-          <VoteOptionVoteMode
+          <OptionCardVoteMode
             userId={userId}
             pollId={pollId}
             options={options}

@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import BackgroundWrapper from '@/components/layout/BackgroundWrapper';
-import ThemeSelector from '@/components/theme/ThemeSelector';
+import { BackgroundWrapper } from '@/components/layout';
+import { ThemeSelector } from '@/components/theme/ThemeSelector';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 

@@ -4,11 +4,11 @@ import { useMemo, useState } from 'react';
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
 import { createPollOption, deleteVote, submitVote } from '@/lib/api';
 
-import VoteAddOption from './VoteAddOption';
-import VoteOptionItem from './VoteOptionItem';
-import { PollOption } from './VoteOptions';
+import { AddOptionInput } from './AddOptionInput';
+import { PollOption } from './OptionCard';
+import { OptionItemCard } from './OptionItemCard';
 
-interface VoteOptionVoteModeProps {
+interface OptionCardVoteModeProps {
   userId: string;
   pollId: string;
   options: PollOption[];
@@ -24,7 +24,7 @@ interface VoteOptionVoteModeProps {
   onEnterEditMode: () => void;
 }
 
-export default function VoteOptionVoteMode({
+export function OptionCardVoteMode({
   userId,
   pollId,
   options,
@@ -35,7 +35,7 @@ export default function VoteOptionVoteMode({
   isAdmin,
   onVoteChange,
   onEnterEditMode,
-}: VoteOptionVoteModeProps) {
+}: OptionCardVoteModeProps) {
   const [newOption, setNewOption] = useState('');
   const [processingOptionId, setProcessingOptionId] = useState<string | null>(null);
   const maxVotes = useMemo(
@@ -115,7 +115,7 @@ export default function VoteOptionVoteMode({
     <>
       <CardContent className="w-full space-y-3 px-2 sm:px-4">
         {options.map(option => (
-          <VoteOptionItem
+          <OptionItemCard
             key={option.id}
             id={option.id}
             text={option.text}
@@ -147,7 +147,7 @@ export default function VoteOptionVoteMode({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <VoteAddOption
+              <AddOptionInput
                 value={newOption}
                 onValueChange={setNewOption}
                 onAddOption={handleAddOption}

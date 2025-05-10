@@ -51,7 +51,7 @@ export async function updatePoll(
 ) {
   try {
     const response = await fetch(`/api/polls/${pollId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },

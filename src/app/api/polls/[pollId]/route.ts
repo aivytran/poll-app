@@ -6,13 +6,13 @@ import prisma from '@/lib/prisma';
  * Poll API Routes
  *
  * This file contains the API endpoints for poll-related operations:
- * - PATCH /api/polls/[pollId]: Update multiple aspects of a poll at once
+ * - PUT /api/polls/[pollId]: Update multiple aspects of a poll at once
  *
  * The endpoint requires a valid pollId parameter in the URL.
  */
 
 /**
- * PATCH /api/polls/[pollId]
+ * PUT /api/polls/[pollId]
  *
  * Updates poll options by creating new options, updating existing ones,
  * and removing deleted options in a single transaction.
@@ -26,7 +26,7 @@ import prisma from '@/lib/prisma';
  *   - 401: Invalid admin token
  *   - 500: Server error
  */
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ pollId: string }> }
 ) {

@@ -2,13 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 
-import PageHeader from '../../layout/PageHeader';
+import { PageHeader } from '../../layout';
 
-import VoteOptions from './VoteOptions';
-import VoteQuestion from './VoteQuestion';
-import VoteUserName from './VoteUserName';
+import { OptionCard } from './OptionCard';
+import { QuestionCard } from './QuestionCard';
+import { UserNameCard } from './UserNameCard';
 
-interface VotePollContainerProps {
+interface PollContainerProps {
   initialUser: { id: string; name: string } | null;
   initialPoll: {
     id: string;
@@ -33,12 +33,12 @@ interface VotePollContainerProps {
   token: string | null;
 }
 
-export default function VotePollContainer({
+export function PollContainer({
   initialUser,
   initialPoll,
   initialUserVotes,
   token,
-}: VotePollContainerProps) {
+}: PollContainerProps) {
   const router = useRouter();
 
   const hasUserName = !!initialUser!.name;
@@ -57,7 +57,7 @@ export default function VotePollContainer({
       />
 
       {/* Username Input Section */}
-      <VoteUserName
+      <UserNameCard
         userId={initialUser!.id}
         initialName={initialUser!.name || ''}
         onNameUpdated={() => {
@@ -66,14 +66,14 @@ export default function VotePollContainer({
       />
 
       {/* Poll Question Section */}
-      <VoteQuestion
+      <QuestionCard
         question={initialPoll.question}
         responsesCount={responsesCount}
         allowMultipleVotes={initialPoll.allowMultipleVotes}
       />
 
       {/* Options Section */}
-      <VoteOptions
+      <OptionCard
         options={initialPoll.options}
         allowMultipleVotes={initialPoll.allowMultipleVotes}
         allowVotersToAddOptions={initialPoll.allowVotersToAddOptions}

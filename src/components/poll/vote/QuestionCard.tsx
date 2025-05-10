@@ -2,17 +2,13 @@ import { Check, Users } from 'lucide-react';
 
 import { Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
 
-interface VoteQuestionProps {
+interface QuestionCardProps {
   question: string;
   responsesCount: number;
   allowMultipleVotes: boolean;
 }
 
-export default function VoteQuestion({
-  question,
-  responsesCount,
-  allowMultipleVotes,
-}: VoteQuestionProps) {
+export function QuestionCard({ question, responsesCount, allowMultipleVotes }: QuestionCardProps) {
   return (
     <Card className="flex flex-col items-center justify-center">
       <CardHeader className="w-full flex flex-col items-center">

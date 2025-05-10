@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import VotePollContainer from '@/components/poll/vote/VotePollContainer';
+import { PollContainer } from '@/components/poll/vote/PollContainer';
 import { getPollData, getUserData, getUserVotes } from '@/lib/data/polls';
 
 export default async function PollPage({
@@ -30,7 +30,7 @@ export default async function PollPage({
   }
 
   return (
-    <VotePollContainer
+    <PollContainer
       initialUser={user}
       initialPoll={poll}
       initialUserVotes={userVotesData.votes}

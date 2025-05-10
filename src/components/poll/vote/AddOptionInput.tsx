@@ -2,19 +2,19 @@ import { Plus } from 'lucide-react';
 
 import { Button, Input } from '@/components/ui';
 
-interface VoteAddOptionProps {
+interface AddOptionInputProps {
   value: string;
   onValueChange: (value: string) => void;
   onAddOption: () => void;
   isDisabled?: boolean;
 }
 
-export default function VoteAddOption({
+export function AddOptionInput({
   value,
   onValueChange,
   onAddOption,
   isDisabled = false,
-}: VoteAddOptionProps) {
+}: AddOptionInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && value.trim()) {
       onAddOption();

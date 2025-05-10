@@ -6,19 +6,23 @@ import { useState } from 'react';
 import { Button, Card, CardContent, Input } from '@/components/ui';
 import { updateUserName } from '@/lib/api';
 
-interface VoteUserNameProps {
+interface UserNameCardProps {
   userId: string;
   initialName: string;
   onNameUpdated?: () => void;
 }
 
-export default function VoteUserName({ userId, initialName, onNameUpdated }: VoteUserNameProps) {
+export function UserNameCard({ userId, initialName, onNameUpdated }: UserNameCardProps) {
   const [name, setName] = useState(initialName || '');
   const [isEditing, setIsEditing] = useState(!initialName);
 
   const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) {e.preventDefault();}
-    if (!name.trim()) {return;}
+    if (e) {
+      e.preventDefault();
+    }
+    if (!name.trim()) {
+      return;
+    }
 
     try {
       const result = await updateUserName(userId, name.trim());

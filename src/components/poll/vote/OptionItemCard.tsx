@@ -6,7 +6,7 @@ import { calculateProgressPercentage } from '@/utils/pollUtils';
 
 import { VoterAvatars, VoterDrawer, type VoteInfo } from './VoterComponents';
 
-interface VoteOptionItemProps {
+interface OptionItemCardProps {
   id: string;
   text: string;
   votes?: VoteInfo[];
@@ -17,7 +17,7 @@ interface VoteOptionItemProps {
   isProcessing?: boolean;
 }
 
-export default function VoteOptionItem({
+export function OptionItemCard({
   id,
   text,
   votes = [],
@@ -26,7 +26,7 @@ export default function VoteOptionItem({
   hasUserName,
   onClick,
   isProcessing = false,
-}: VoteOptionItemProps) {
+}: OptionItemCardProps) {
   const voteCount = useMemo(() => votes.length, [votes]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const progressPercentage = useMemo(
