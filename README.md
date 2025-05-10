@@ -22,21 +22,32 @@ cd poll-app
 npm install
 ```
 
-3. Set up environment variables
-   Create a `.env.local` file in the root directory with the following variables:
+3. Set up environment variables. Create a `.env` file in the root directory with the following variables:
 
 ```
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
-DATABASE_URL=postgresql://username:password@localhost:5432/polldb
+DATABASE_URL=postgresql://{username}:{password}@localhost:5432/polldb
 ```
 
-4. Run the development server
+4. Generate the Prisma client.
 
 ```bash
-npm run dev
+make prisma-generate
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application
+5. Migrate the development database.
+
+```bash
+make upgrade-db
+```
+
+6. Run the development server
+
+```bash
+make serve
+```
+
+7. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application
 
 The application will automatically create a guest user ID for you on your first visit. You can start creating and voting on polls immediately.
 
