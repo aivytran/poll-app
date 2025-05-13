@@ -5,8 +5,8 @@ import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { createPoll } from '@/lib/api';
 
-import { useAuth } from '@/context/AuthContext';
-import { usePoll } from '@/context/PollContext';
+import { useAuth } from '@/hooks/AuthContext';
+import { usePoll } from '@/hooks/PollContext';
 import { OptionCard } from './OptionCard';
 import { PollCreationSuccessPage } from './PollCreationSuccessPage';
 import { QuestionCard } from './QuestionCard';
@@ -16,23 +16,18 @@ import { SettingCard } from './SettingCard';
  * Container for creating a new poll with options and settings
  */
 export function PollContainer() {
-  const { question, options, settings } = usePoll();
+  const { question, options, settings, setHasQuestionError, setHasOptionError } = usePoll();
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultLinks, setResultLinks] = useState(null);
 
-  // Validation state
-  const [questionError, setQuestionError] = useState(false);
-  const [optionError, setOptionError] = useState(false);
-
-  // Validation logic extracted to separate function
   const validateForm = () => {
     const hasEmptyQuestion = !question.trim();
     const hasEmptyOptions = options.some(option => !option.text.trim());
 
-    setQuestionError(hasEmptyQuestion);
-    setOptionError(hasEmptyOptions);
+    setHasQuestionError(hasEmptyQuestion);
+    setHasOptionError(hasEmptyOptions);
 
     return !hasEmptyQuestion && !hasEmptyOptions;
   };
@@ -85,9 +80,9 @@ export function PollContainer() {
 
       {!isPollCreated ? (
         <>
-          <QuestionCard hasQuestionError={questionError} setQuestionError={setQuestionError} />
+          <QuestionCard />
 
-          <OptionCard hasOptionError={optionError} setOptionError={setOptionError} />
+          <OptionCard />
 
           <SettingCard />
 

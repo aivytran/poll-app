@@ -9,11 +9,7 @@ type AuthContextType = {
   logout: () => void;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  userId: '',
-  login: () => {},
-  logout: () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userId, setUserId] = useState<string>('');
@@ -23,6 +19,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (cookieId) {
       setUserId(cookieId);
     }
+  }, [userId]);
+
+  useEffect(() => {
+    console.log(`${new Date().toISOString()} [AuthProvider] userId: ${userId}`);
   }, []);
 
   const login = (id: string) => {
@@ -38,4 +38,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return <AuthContext.Provider value={{ userId, login, logout }}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

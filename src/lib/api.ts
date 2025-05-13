@@ -8,9 +8,9 @@
 export async function createPoll(
   question: string,
   userId: string,
-  allowMultipleVotes: boolean,
   options: string[],
-  allowVotersToAddOptions: boolean = false
+  allowMultipleVotes: boolean,
+  allowVotersToAddOptions: boolean
 ) {
   try {
     const response = await fetch(`/api/polls`, {
@@ -44,18 +44,14 @@ export async function createPoll(
  * @param token - Admin token for authorization
  * @returns Response with success or error
  */
-export async function updatePoll(
-  pollId: string,
-  options: Array<{ id?: string; text: string }>,
-  token: string
-) {
+export async function updatePoll(pollId: string, options: Array<{ id?: string; text: string }>) {
   try {
     const response = await fetch(`/api/polls/${pollId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ options, token }),
+      body: JSON.stringify({ options }),
     });
 
     const data = await response.json();

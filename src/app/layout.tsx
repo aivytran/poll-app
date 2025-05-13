@@ -2,8 +2,9 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import { BackgroundWrapper } from '@/components/layout';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
-import { AuthProvider } from '@/context/AuthContext';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { AuthProvider } from '@/hooks/AuthContext';
+import { PollContextProvider } from '@/hooks/PollContext';
+import { ThemeProvider } from '@/hooks/ThemeContext';
 
 import type { Metadata } from 'next';
 import './globals.css';
@@ -44,7 +45,9 @@ export default function RootLayout({
             <div className="w-full my-10">
               <div className="w-full sm:max-w-lg mx-auto">
                 <div className="flex flex-col w-full gap-4 px-3 sm:px-0">
-                  <AuthProvider>{children}</AuthProvider>
+                  <AuthProvider>
+                    <PollContextProvider>{children}</PollContextProvider>
+                  </AuthProvider>
                 </div>
               </div>
             </div>

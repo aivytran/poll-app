@@ -3,25 +3,20 @@ import React from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui';
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
-import { usePoll } from '@/context/PollContext';
-
-interface QuestionCardProps {
-  hasQuestionError: boolean;
-  setQuestionError: React.Dispatch<React.SetStateAction<boolean>>;
-}
+import { usePoll } from '@/hooks/PollContext';
 
 /**
  * Component for the poll question input
  */
-export function QuestionCard({ hasQuestionError, setQuestionError }: QuestionCardProps) {
-  const { question, setQuestion } = usePoll();
+export function QuestionCard() {
+  const { question, setQuestion, hasQuestionError, setHasQuestionError } = usePoll();
 
   // Handle input change and validate
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuestion(value);
     if (value.trim()) {
-      setQuestionError(false);
+      setHasQuestionError(false);
     }
   };
 

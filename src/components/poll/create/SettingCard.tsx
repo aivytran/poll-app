@@ -8,7 +8,7 @@ import {
   CardTitle,
   Checkbox,
 } from '@/components/ui';
-import { usePoll } from '@/context/PollContext';
+import { usePoll } from '@/hooks/PollContext';
 
 /**
  * Component for managing poll settings

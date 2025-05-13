@@ -10,32 +10,34 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { useState } from 'react';
 
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
+import { usePoll } from '@/hooks/PollContext';
+import { useOptionHandlers } from '@/hooks/useOptionHandler';
 import { PollOption } from '@/types/shared';
 import { DragDropOptionItemCard } from './DragDropOptionItemCard';
 
-interface DragDropOptionsProps {
-  options: PollOption[];
-  onChange: (options: PollOption[]) => void;
-  onRemove: (id: string) => void;
-  isOptionReadOnly?: (id: string) => boolean;
-  isOptionDeletable?: (id: string) => boolean;
-  showVotes?: boolean;
-  showError?: boolean;
-}
-
 export function DragDropOptions({
   options,
-  onChange,
-  onRemove,
-  isOptionReadOnly = () => false,
-  isOptionDeletable = () => true,
-  showVotes = false,
-  showError = false,
-}: DragDropOptionsProps) {
+  setOptions,
+}: {
+  options: PollOption[];
+  setOptions: (options: PollOption[]) => void;
+}) {
+  const { hasOptionError, setHasOptionError } = usePoll();
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  const { handleChange, handleRemove, handleSingleOptionChange } = useOptionHandlers(
+    options,
+    setOptions,
+    { hasError: hasOptionError, clearError: () => setHasOptionError(false) }
+  );
 
   // Find active option for drag overlay
   const activeOption = activeId ? options.find(o => o.id === activeId) : null;
+
+  // Track which item is being dragged
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
 
   // Handle drag end - reorder items
   const handleDragEnd = (event: DragEndEvent) => {
@@ -46,21 +48,11 @@ export function DragDropOptions({
       const newIndex = options.findIndex(option => option.id === over.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        onChange(arrayMove(options, oldIndex, newIndex));
+        handleChange(arrayMove(options, oldIndex, newIndex));
       }
     }
 
     setActiveId(null);
-  };
-
-  // Track which item is being dragged
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  // Update option text
-  const handleSingleOptionChange = (id: string, value: string) => {
-    onChange(options.map(option => (option.id === id ? { ...option, text: value } : option)));
   };
 
   return (
@@ -76,11 +68,8 @@ export function DragDropOptions({
               key={option.id}
               option={option}
               onChange={handleSingleOptionChange}
-              onRemove={onRemove}
-              isReadOnly={isOptionReadOnly(option.id)}
-              isDeletable={isOptionDeletable(option.id)}
-              showVotes={showVotes}
-              showError={showError && !option.text.trim()}
+              onRemove={handleRemove}
+              isDeletable={options.length > 2}
             />
           ))}
         </div>
@@ -91,14 +80,12 @@ export function DragDropOptions({
         {activeOption && (
           <DragDropOptionItemCard
             option={activeOption}
-            isReadOnly={isOptionReadOnly(activeOption.id)}
-            isDeletable={isOptionDeletable(activeOption.id)}
-            showVotes={showVotes}
+            isDeletable={options.length > 2}
             isDragOverlay={true}
           />
         )}
       </DragOverlay>
-      <ValidationMessage show={showError} message="All options must have text" />
+      <ValidationMessage show={hasOptionError} message="All options must have text" />
     </DndContext>
   );
 }

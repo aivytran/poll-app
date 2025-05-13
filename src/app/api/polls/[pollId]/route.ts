@@ -33,20 +33,10 @@ export async function PUT(
   const { pollId } = await params;
 
   try {
-    const { options, token } = await request.json();
+    const { options } = await request.json();
 
     if (!options?.length) {
       return NextResponse.json({ error: 'Missing options' }, { status: 400 });
-    }
-
-    // Verify token
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
-      select: { adminToken: true },
-    });
-
-    if (!poll || poll.adminToken !== token) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     // Get existing option IDs for cleanup

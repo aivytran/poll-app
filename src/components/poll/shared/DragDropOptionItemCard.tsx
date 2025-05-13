@@ -4,17 +4,16 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Lock, Trash2 } from 'lucide-react';
 
 import { Badge, Button, Input } from '@/components/ui';
+import { usePoll } from '@/hooks/PollContext';
 import { cn } from '@/lib/utils';
 import { PollOption } from '@/types/shared';
+import { useMemo } from 'react';
 
 interface DragDropOptionItemCardProps {
   option: PollOption;
   onChange?: (id: string, value: string) => void;
   onRemove?: (id: string) => void;
-  isReadOnly?: boolean;
   isDeletable?: boolean;
-  showVotes?: boolean;
-  showError?: boolean;
   isDragOverlay?: boolean;
 }
 
@@ -22,14 +21,16 @@ export function DragDropOptionItemCard({
   option,
   onChange,
   onRemove,
-  isReadOnly = false,
   isDeletable = true,
-  showVotes = false,
-  showError = false,
   isDragOverlay = false,
 }: DragDropOptionItemCardProps) {
-  // Only use sortable hook if not in overlay mode
-  //
+  const { hasOptionError, votes } = usePoll();
+  const optionVotes = useMemo(
+    () => Object.values(votes).filter(vote => vote.optionId === option.id),
+    [votes, option.id]
+  );
+  const isReadOnly = useMemo(() => optionVotes.length > 0, [optionVotes]);
+
   // TODO: Refactor this so we don't call it conditionally.
   const sortableProps = !isDragOverlay
     ? // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -80,7 +81,7 @@ export function DragDropOptionItemCard({
           onChange={e => !isReadOnly && onChange?.(option.id, e.target.value)}
           disabled={isReadOnly || isDragOverlay}
           placeholder="Enter an option"
-          error={showError && !option.text.trim()}
+          error={hasOptionError && !option.text.trim()}
           className={cn('w-full', isReadOnly && 'pr-8')}
           onClick={e => e.stopPropagation()}
           onTouchStart={e => e.stopPropagation()}
@@ -94,9 +95,9 @@ export function DragDropOptionItemCard({
       </div>
 
       {/* Vote count */}
-      {showVotes && option.votes && (
+      {optionVotes.length > 0 && (
         <Badge variant="secondary" className="mx-2 font-medium text-xs min-w-[20px] text-center">
-          {option.votes.length}
+          {optionVotes.length}
         </Badge>
       )}
 

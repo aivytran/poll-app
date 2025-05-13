@@ -26,7 +26,7 @@ export interface PollSettings {
 export interface Vote {
   id: string;
   optionId: string;
-  voterId: string;
+  userId: string;
 }
 
 export interface User {

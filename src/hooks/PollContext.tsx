@@ -3,16 +3,18 @@
 import { PollOption, PollSettings, User, Vote } from '@/types/shared';
 import { createContext, useContext, useState } from 'react';
 
-interface PollContextType {
+interface PollContext {
   // Poll data
+  pollId: string;
+  setPollId: (pollId: string) => void;
   question: string;
   setQuestion: (question: string) => void;
   options: PollOption[];
   setOptions: (options: PollOption[]) => void;
   settings: PollSettings;
   setSettings: (settings: PollSettings) => void;
-  adminToken: string;
-  setAdminToken: (token: string) => void;
+  isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
 
   // Vote data
   votes: Record<string, Vote>;
@@ -20,9 +22,13 @@ interface PollContextType {
   users: Record<string, User>;
   setUsers: (users: Record<string, User>) => void;
 
+  // Validation state
+  hasQuestionError: boolean;
+  setHasQuestionError: (hasQuestionError: boolean) => void;
+  hasOptionError: boolean;
+  setHasOptionError: (hasOptionError: boolean) => void;
+
   // Actions
-  addOption: (text: string) => void;
-  removeOption: (id: string) => void;
   resetPoll: () => void;
 }
 
@@ -31,45 +37,21 @@ const defaultSettings: PollSettings = {
   allowVotersToAddOptions: false,
 };
 
-const PollContext = createContext<PollContextType>({
-  question: '',
-  setQuestion: () => {},
-  options: [],
-  setOptions: () => {},
-  settings: defaultSettings,
-  setSettings: () => {},
-  adminToken: '',
-  setAdminToken: () => {},
+const PollContext = createContext<PollContext | undefined>(undefined);
 
-  votes: {},
-  setVotes: () => {},
-  users: {},
-  setUsers: () => {},
-
-  addOption: () => {},
-  removeOption: () => {},
-  resetPoll: () => {},
-});
-
-export function PollProvider({ children }: { children: React.ReactNode }) {
+export function PollContextProvider({ children }: { children: React.ReactNode }) {
+  // Poll data
+  const [pollId, setPollId] = useState('');
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState<PollOption[]>([]);
-  const [adminToken, setAdminToken] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [settings, setSettings] = useState<PollSettings>(defaultSettings);
-
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [users, setUsers] = useState<Record<string, User>>({});
 
-  const addOption = (text: string) => {
-    setOptions([...options, { id: crypto.randomUUID(), text }]);
-  };
-
-  const removeOption = (id: string) => {
-    if (options.length <= 2) {
-      return;
-    }
-    setOptions(options.filter(option => option.id !== id));
-  };
+  // Validation state
+  const [hasQuestionError, setHasQuestionError] = useState(false);
+  const [hasOptionError, setHasOptionError] = useState(false);
 
   const resetPoll = () => {
     setQuestion('');
@@ -82,20 +64,24 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
   return (
     <PollContext.Provider
       value={{
+        pollId,
+        setPollId,
         question,
         setQuestion,
         options,
         setOptions,
         settings,
         setSettings,
-        adminToken,
-        setAdminToken,
+        isAdmin,
+        setIsAdmin,
         votes,
         setVotes,
         users,
         setUsers,
-        addOption,
-        removeOption,
+        hasQuestionError,
+        setHasQuestionError,
+        hasOptionError,
+        setHasOptionError,
         resetPoll,
       }}
     >
@@ -104,4 +90,10 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const usePoll = () => useContext(PollContext);
+export const usePoll = () => {
+  const context = useContext(PollContext);
+  if (!context) {
+    throw new Error('usePoll must be used within a PollContextProvider');
+  }
+  return context;
+};

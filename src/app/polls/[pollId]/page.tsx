@@ -1,7 +1,5 @@
-import { cookies } from 'next/headers';
-
 import { PollContainer } from '@/components/poll/vote/PollContainer';
-import { getPollData, getUserData, getUserVotes } from '@/lib/data/polls';
+import { getPollSnapshot } from '@/lib/data/polls';
 
 export default async function PollPage({
   params,
@@ -14,24 +12,14 @@ export default async function PollPage({
   const resolvedSearchParams = await searchParams;
   const token = (resolvedSearchParams.token as string) || null;
 
-  // Get user ID from cookies
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('user_id')!.value;
+  const { poll, votes, users } = await getPollSnapshot(pollId);
+  const isAdmin = poll.adminToken === token;
 
-  // Fetch all data in parallel
-  const [poll, userVotesData, user] = await Promise.all([
-    getPollData(pollId),
-    getUserVotes(userId, pollId),
-    getUserData(userId),
-  ]);
+  console.log(
+    `${new Date().toISOString()} [PollPage] Fetched users data (to be passed to PollContainer): ${JSON.stringify(
+      users
+    )}`
+  );
 
-  if (!poll) {
-    return <div className="text-red-600">Poll not found</div>;
-  }
-
-  if (!user) {
-    return <div className="text-red-600">User not found</div>;
-  }
-
-  return <PollContainer user={user} poll={poll} userVotes={userVotesData.votes} token={token} />;
+  return <PollContainer poll={poll} votes={votes} users={users} isAdmin={isAdmin} />;
 }

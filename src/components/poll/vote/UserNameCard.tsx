@@ -1,20 +1,32 @@
 'use client';
 
 import { Edit, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button, Card, CardContent, Input } from '@/components/ui';
+import { useAuth } from '@/hooks/AuthContext';
+import { usePoll } from '@/hooks/PollContext';
 import { updateUserName } from '@/lib/api';
-import { User } from '@/types/shared';
 
-interface UserNameCardProps {
-  user: User;
-  onNameUpdated?: () => void;
-}
+export function UserNameCard() {
+  const { users } = usePoll();
+  const { userId } = useAuth();
 
-export function UserNameCard({ user, onNameUpdated }: UserNameCardProps) {
-  const [name, setName] = useState(user.name || '');
-  const [isEditing, setIsEditing] = useState(!user.name);
+  const [name, setName] = useState('');
+  const [isEditing, setIsEditing] = useState(true);
+
+  useEffect(() => {
+    console.log(`${new Date().toISOString()} [UserNameCard] users: ${JSON.stringify(users)}`);
+    console.log(`${new Date().toISOString()} [UserNameCard] userId: ${userId}`);
+  }, []);
+
+  useEffect(() => {
+    const currentUser = users[userId];
+    if (currentUser) {
+      setName(currentUser.name || '');
+      setIsEditing(!currentUser.name);
+    }
+  }, [users, userId]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -25,10 +37,9 @@ export function UserNameCard({ user, onNameUpdated }: UserNameCardProps) {
     }
 
     try {
-      const result = await updateUserName(user.id, name.trim());
+      const result = await updateUserName(userId!, name.trim());
       if (result) {
         setIsEditing(false);
-        onNameUpdated?.();
       }
     } catch (error) {
       console.error('Error updating name:', error);
@@ -36,7 +47,7 @@ export function UserNameCard({ user, onNameUpdated }: UserNameCardProps) {
   };
 
   const handleCancel = () => {
-    setName(user.name || '');
+    setName(name || '');
     setIsEditing(false);
   };
 
@@ -60,7 +71,7 @@ export function UserNameCard({ user, onNameUpdated }: UserNameCardProps) {
             <Button type="submit" disabled={!name.trim()} className="flex-shrink-0 ml-2">
               Save
             </Button>
-            {user.name && (
+            {name && (
               <Button
                 type="button"
                 variant="secondary"

@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { LinkCard } from '@/components/poll/shared/LinkCard';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
-import { usePoll } from '@/context/PollContext';
+import { usePoll } from '@/hooks/PollContext';
 
 /**
  * Component shown after a poll is successfully created

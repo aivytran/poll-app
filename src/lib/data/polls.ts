@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { PollSnapshot, Vote, Voter } from '@/types/shared';
+import { PollSnapshot, User, Vote } from '@/types/shared';
 import 'server-only';
 
 /**
@@ -38,7 +38,7 @@ export async function getPollSnapshot(pollId: string): Promise<PollSnapshot> {
     throw new Error('Poll not found');
   }
 
-  const voters: Record<string, Voter> = {};
+  const users: Record<string, User> = {};
   const votes: Record<string, Vote> = {};
 
   // Normalize nested votes
@@ -48,12 +48,12 @@ export async function getPollSnapshot(pollId: string): Promise<PollSnapshot> {
       votes[vote.id] = {
         id: vote.id,
         optionId: vote.optionId,
-        voterId: vote.userId,
+        userId: vote.userId,
       };
 
       // Add voter if not already present
-      if (!voters[vote.user.id]) {
-        voters[vote.user.id] = {
+      if (!users[vote.user.id]) {
+        users[vote.user.id] = {
           id: vote.user.id,
           name: vote.user.name ?? '',
         };
@@ -77,6 +77,6 @@ export async function getPollSnapshot(pollId: string): Promise<PollSnapshot> {
       adminToken: poll.adminToken!!,
     },
     votes,
-    voters,
+    users,
   };
 }

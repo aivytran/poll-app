@@ -1,20 +1,22 @@
 import { CheckCircle, Edit, Info, MousePointer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { useAuth } from '@/hooks/AuthContext';
+import { usePoll } from '@/hooks/PollContext';
 
-interface OptionCardStatusMessageProps {
-  hasUserName: boolean;
-  isEditMode: boolean;
-  hasVoted: boolean;
-  allowMultipleVotes: boolean;
-}
+export function OptionCardStatusMessage({ isEditMode }: { isEditMode: boolean }) {
+  const { users, votes, settings } = usePoll();
+  const { userId } = useAuth();
+  const [hasUserName, setHasUserName] = useState(false);
+  const [hasVoted, setHasVoted] = useState(false);
 
-export function OptionCardStatusMessage({
-  hasUserName,
-  isEditMode,
-  hasVoted,
-  allowMultipleVotes,
-}: OptionCardStatusMessageProps) {
+  useEffect(() => {
+    const currentUser = users[userId];
+    setHasUserName(!!currentUser?.name);
+    setHasVoted(Object.values(votes).filter(vote => vote.userId === userId).length > 0);
+  }, [users, votes, userId]);
+
   const getStatusMessage = () => {
     if (!hasUserName) {
       return {
@@ -30,13 +32,13 @@ export function OptionCardStatusMessage({
     } else if (hasVoted) {
       return {
         line1: 'Thanks for voting!',
-        line2: allowMultipleVotes
+        line2: settings.allowMultipleVotes
           ? 'Click to select more options or unselect existing votes'
           : 'Click another option to change your vote',
       };
     } else {
       return {
-        line1: allowMultipleVotes ? 'Select options' : 'Select an option',
+        line1: settings.allowMultipleVotes ? 'Select options' : 'Select an option',
         line2: 'Your vote is recorded instantly',
       };
     }

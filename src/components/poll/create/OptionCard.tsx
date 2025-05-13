@@ -10,26 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui';
-import { usePoll } from '@/context/PollContext';
-import { PollOption } from '@/types/shared';
+import { usePoll } from '@/hooks/PollContext';
+import { uniqueId } from '@/utils/pollUtils';
 
-interface OptionCardProps {
-  hasOptionError: boolean;
-  setOptionError: (hasError: boolean) => void;
-}
+export function OptionCard() {
+  const { options, setOptions } = usePoll();
 
-/**
- * Component for managing poll options (add, remove, reorder)
- */
-export function OptionCard({ hasOptionError, setOptionError }: OptionCardProps) {
-  const { options, setOptions, addOption, removeOption } = usePoll();
-
-  const updateOptions = (newOptions: PollOption[]) => {
-    setOptions(newOptions);
-    // Clear validation error if all options now have values
-    if (hasOptionError && !newOptions.some(opt => !opt.text.trim())) {
-      setOptionError(false);
-    }
+  const addOption = (text: string) => {
+    setOptions([...options, { id: uniqueId(), text }]);
   };
 
   return (
@@ -43,14 +31,7 @@ export function OptionCard({ hasOptionError, setOptionError }: OptionCardProps) 
       </CardHeader>
 
       <CardContent className="px-2 sm:px-4">
-        <DragDropOptions
-          options={options}
-          onChange={updateOptions} // TODO: Remove this
-          onRemove={removeOption}
-          isOptionDeletable={() => options.length > 2}
-          isOptionReadOnly={() => false}
-          showError={hasOptionError}
-        />
+        <DragDropOptions options={options} setOptions={setOptions} />
       </CardContent>
 
       <CardFooter>
