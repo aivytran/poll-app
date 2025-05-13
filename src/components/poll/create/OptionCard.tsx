@@ -10,12 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui';
+import { usePoll } from '@/context/PollContext';
 import { PollOption } from '@/types/shared';
-import { uniqueId } from '@/utils/pollUtils';
 
 interface OptionCardProps {
-  options: PollOption[];
-  setOptions: (options: PollOption[]) => void;
   hasOptionError: boolean;
   setOptionError: (hasError: boolean) => void;
 }
@@ -23,24 +21,10 @@ interface OptionCardProps {
 /**
  * Component for managing poll options (add, remove, reorder)
  */
-export function OptionCard({
-  options,
-  setOptions,
-  hasOptionError,
-  setOptionError,
-}: OptionCardProps) {
-  const handleAddOption = () => {
-    setOptions([...options, { id: uniqueId(), text: '' }]);
-  };
+export function OptionCard({ hasOptionError, setOptionError }: OptionCardProps) {
+  const { options, setOptions, addOption, removeOption } = usePoll();
 
-  const handleRemoveOption = (id: string) => {
-    if (options.length <= 2) {
-      return;
-    }
-    setOptions(options.filter(option => option.id !== id));
-  };
-
-  const handleOptionChange = (newOptions: PollOption[]) => {
+  const updateOptions = (newOptions: PollOption[]) => {
     setOptions(newOptions);
     // Clear validation error if all options now have values
     if (hasOptionError && !newOptions.some(opt => !opt.text.trim())) {
@@ -61,8 +45,8 @@ export function OptionCard({
       <CardContent className="px-2 sm:px-4">
         <DragDropOptions
           options={options}
-          onChange={handleOptionChange}
-          onRemove={handleRemoveOption}
+          onChange={updateOptions} // TODO: Remove this
+          onRemove={removeOption}
           isOptionDeletable={() => options.length > 2}
           isOptionReadOnly={() => false}
           showError={hasOptionError}
@@ -70,7 +54,7 @@ export function OptionCard({
       </CardContent>
 
       <CardFooter>
-        <Button onClick={handleAddOption} variant="outline" className="w-full">
+        <Button onClick={() => addOption('')} variant="outline" className="w-full">
           <Plus />
           Add Option
         </Button>

@@ -3,29 +3,18 @@ import { useState } from 'react';
 
 import { LinkCard } from '@/components/poll/shared/LinkCard';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
-import { PollOption } from '@/types/shared';
+import { usePoll } from '@/context/PollContext';
 
 /**
  * Component shown after a poll is successfully created
  */
 
-interface PollCreationSuccessPageProps {
-  question: string;
-  options: PollOption[];
-  allowMultipleVotes: boolean;
-  allowVotersToAddOptions: boolean;
-  resultLinks: { voteLink: string; adminLink: string };
-  onCreateAnother: () => void;
-}
-
 export function PollCreationSuccessPage({
-  question,
-  options,
-  allowMultipleVotes,
-  allowVotersToAddOptions,
   resultLinks,
-  onCreateAnother,
-}: PollCreationSuccessPageProps) {
+}: {
+  resultLinks: { voteLink: string; adminLink: string };
+}) {
+  const { question, options, settings, resetPoll } = usePoll();
   const [votingCopied, setVotingCopied] = useState(false);
   const [adminCopied, setAdminCopied] = useState(false);
 
@@ -77,12 +66,12 @@ export function PollCreationSuccessPage({
             <Badge className="mb-2">Settings</Badge>
             {[
               {
-                value: allowMultipleVotes,
+                value: settings.allowMultipleVotes,
                 label: 'Multiple votes allowed',
                 alt: 'Single vote only',
               },
               {
-                value: allowVotersToAddOptions,
+                value: settings.allowVotersToAddOptions,
                 label: 'Voters can add options',
                 alt: 'Only admin can add options',
               },
@@ -122,7 +111,7 @@ export function PollCreationSuccessPage({
         }
       />
 
-      <Button onClick={onCreateAnother} size="lg">
+      <Button onClick={() => resetPoll()} size="lg">
         Create Another Poll
       </Button>
     </>

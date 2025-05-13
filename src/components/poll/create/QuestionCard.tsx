@@ -3,23 +3,19 @@ import React from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui';
 import { ValidationMessage } from '@/components/ui/ValidationMessage';
+import { usePoll } from '@/context/PollContext';
 
 interface QuestionCardProps {
-  question: string;
   hasQuestionError: boolean;
-  setQuestion: React.Dispatch<React.SetStateAction<string>>;
   setQuestionError: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
  * Component for the poll question input
  */
-export function QuestionCard({
-  question,
-  hasQuestionError,
-  setQuestion,
-  setQuestionError,
-}: QuestionCardProps) {
+export function QuestionCard({ hasQuestionError, setQuestionError }: QuestionCardProps) {
+  const { question, setQuestion } = usePoll();
+
   // Handle input change and validate
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
