@@ -1,6 +1,6 @@
 'use client';
 
-import { PollOption, PollSettings, Vote, Voter } from '@/types/shared';
+import { PollOption, PollSettings, User, Vote } from '@/types/shared';
 import { createContext, useContext, useState } from 'react';
 
 interface PollContextType {
@@ -17,8 +17,8 @@ interface PollContextType {
   // Vote data
   votes: Record<string, Vote>;
   setVotes: (votes: Record<string, Vote>) => void;
-  voters: Record<string, Voter>;
-  setVoters: (voters: Record<string, Voter>) => void;
+  users: Record<string, User>;
+  setUsers: (users: Record<string, User>) => void;
 
   // Actions
   addOption: (text: string) => void;
@@ -43,8 +43,8 @@ const PollContext = createContext<PollContextType>({
 
   votes: {},
   setVotes: () => {},
-  voters: {},
-  setVoters: () => {},
+  users: {},
+  setUsers: () => {},
 
   addOption: () => {},
   removeOption: () => {},
@@ -58,7 +58,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<PollSettings>(defaultSettings);
 
   const [votes, setVotes] = useState<Record<string, Vote>>({});
-  const [voters, setVoters] = useState<Record<string, Voter>>({});
+  const [users, setUsers] = useState<Record<string, User>>({});
 
   const addOption = (text: string) => {
     setOptions([...options, { id: crypto.randomUUID(), text }]);
@@ -76,7 +76,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     setOptions([]);
     setSettings(defaultSettings);
     setVotes({});
-    setVoters({});
+    setUsers({});
   };
 
   return (
@@ -92,8 +92,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         setAdminToken,
         votes,
         setVotes,
-        voters,
-        setVoters,
+        users,
+        setUsers,
         addOption,
         removeOption,
         resetPoll,

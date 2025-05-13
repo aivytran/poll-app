@@ -29,7 +29,7 @@ export interface Vote {
   voterId: string;
 }
 
-export interface Voter {
+export interface User {
   id: string;
   name: string;
 }
@@ -37,5 +37,5 @@ export interface Voter {
 export interface PollSnapshot {
   poll: PollData;
   votes: Record<string, Vote>;
-  voters: Record<string, Voter>;
+  users: Record<string, User>;
 }
