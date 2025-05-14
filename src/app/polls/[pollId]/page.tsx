@@ -1,4 +1,5 @@
 import { PollContainer } from '@/components/poll/vote/PollContainer';
+import { PollContextProvider } from '@/hooks/PollContext';
 import { getPollSnapshot } from '@/lib/data/polls';
 
 export default async function PollPage({
@@ -14,12 +15,14 @@ export default async function PollPage({
 
   const { poll, votes, users } = await getPollSnapshot(pollId);
   const isAdmin = poll.adminToken === token;
-
-  console.log(
-    `${new Date().toISOString()} [PollPage] Fetched users data (to be passed to PollContainer): ${JSON.stringify(
-      users
-    )}`
+  return (
+    <PollContextProvider
+      initialPoll={poll}
+      initialVotes={votes}
+      initialUsers={users}
+      initialIsAdmin={isAdmin}
+    >
+      <PollContainer />
+    </PollContextProvider>
   );
-
-  return <PollContainer poll={poll} votes={votes} users={users} isAdmin={isAdmin} />;
 }

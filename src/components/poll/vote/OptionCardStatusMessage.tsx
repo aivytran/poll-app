@@ -1,5 +1,4 @@
 import { CheckCircle, Edit, Info, MousePointer } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { useAuth } from '@/hooks/AuthContext';
@@ -8,14 +7,10 @@ import { usePoll } from '@/hooks/PollContext';
 export function OptionCardStatusMessage({ isEditMode }: { isEditMode: boolean }) {
   const { users, votes, settings } = usePoll();
   const { userId } = useAuth();
-  const [hasUserName, setHasUserName] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
 
-  useEffect(() => {
-    const currentUser = users[userId];
-    setHasUserName(!!currentUser?.name);
-    setHasVoted(Object.values(votes).filter(vote => vote.userId === userId).length > 0);
-  }, [users, votes, userId]);
+  const currentUser = users[userId];
+  const hasUserName = !!currentUser?.name;
+  const hasVoted = Object.values(votes).filter(vote => vote.userId === userId).length > 0;
 
   const getStatusMessage = () => {
     if (!hasUserName) {

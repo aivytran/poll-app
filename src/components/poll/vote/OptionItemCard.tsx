@@ -1,58 +1,38 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Badge, Card, CardContent, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { calculateProgressPercentage } from '@/utils/pollUtils';
 
-import { Vote } from '@/types/shared';
+import { PollOption, Vote } from '@/types/shared';
 import { VoterAvatars, VoterDrawer } from './VoterComponents';
 
 interface OptionItemCardProps {
-  id: string;
-  text: string;
+  option: PollOption;
   votes?: Vote[];
   isVoted: boolean;
-  maxVotes: number;
-  hasUserName: boolean;
+  progressBarPercentage: number;
   onClick: (id: string, e?: React.MouseEvent) => void;
-  isProcessing?: boolean;
+  isDisabled?: boolean;
 }
 
 export function OptionItemCard({
-  id,
-  text,
+  option,
   votes = [],
   isVoted,
-  maxVotes,
-  hasUserName,
+  progressBarPercentage,
   onClick,
-  isProcessing = false,
+  isDisabled = false,
 }: OptionItemCardProps) {
-  const voteCount = useMemo(() => votes.length, [votes]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const progressPercentage = useMemo(
-    () => calculateProgressPercentage(voteCount, maxVotes),
-    [voteCount, maxVotes]
-  );
 
   const openVoterDrawer = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setDrawerOpen(true);
   }, []);
 
-  const handleCardClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!hasUserName || isProcessing) {
-        return;
-      }
-      onClick(id, e);
-    },
-    [hasUserName, onClick, id, isProcessing]
-  );
-
   const cardClasses = cn(
     'w-full border-0 shadow-none bg-transparent py-0 group',
-    hasUserName && !isProcessing
+    !isDisabled
       ? 'hover:bg-accent/10 transition-colors cursor-pointer'
       : 'opacity-80 pointer-events-none'
   );
@@ -61,10 +41,9 @@ export function OptionItemCard({
     <>
       <Card
         role="button"
-        tabIndex={hasUserName && !isProcessing ? 0 : -1}
         className={cardClasses}
-        onClick={handleCardClick}
-        aria-disabled={!hasUserName || isProcessing}
+        onClick={() => onClick(option.id)}
+        aria-disabled={isDisabled}
         aria-pressed={isVoted}
       >
         <CardContent className="p-1 pb-0">
@@ -74,44 +53,41 @@ export function OptionItemCard({
               <div
                 className={cn(
                   'relative h-4 w-4 flex-shrink-0 rounded-full border transition-colors',
-                  isVoted ? 'border-primary border-2' : 'border-muted-foreground/50',
-                  isProcessing && 'opacity-50 animate-pulse'
+                  isVoted ? 'border-primary border-2' : 'border-muted-foreground/50'
                 )}
               >
                 {isVoted && <div className="absolute inset-0.5 rounded-full bg-primary" />}
               </div>
-              <span className={cn('font-medium truncate', isProcessing && 'opacity-50')}>
-                {text}
-              </span>
+              <span className={cn('font-medium truncate')}>{option.text}</span>
             </div>
 
             {/* Vote count and avatars */}
             <div
-              className={cn('flex items-center flex-shrink-0 ml-2', isProcessing && 'opacity-50')}
+              className={cn('flex items-center flex-shrink-0 ml-2')}
               onClick={e => {
-                if (!isProcessing) {
-                  e.stopPropagation();
-                  openVoterDrawer(e);
-                }
+                e.stopPropagation();
+                openVoterDrawer(e);
               }}
             >
-              <VoterAvatars
-                votes={votes}
-                openVoterDrawer={isProcessing ? undefined : openVoterDrawer}
-              />
+              <VoterAvatars votes={votes} openVoterDrawer={openVoterDrawer} />
 
               <Badge className="border-none" variant="outline">
-                {voteCount}
+                {votes.length}
               </Badge>
             </div>
           </div>
 
           {/* Progress bar */}
-          <Progress value={progressPercentage} className={cn(isProcessing && 'opacity-50')} />
+          <Progress value={progressBarPercentage} />
         </CardContent>
       </Card>
 
-      <VoterDrawer isOpen={drawerOpen} setIsOpen={setDrawerOpen} votes={votes} optionText={text} />
+      <VoterDrawer
+        isOpen={drawerOpen}
+        setIsOpen={setDrawerOpen}
+        votes={votes}
+        optionText={option.text}
+      />
     </>
   );
 }

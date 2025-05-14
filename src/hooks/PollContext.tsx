@@ -1,6 +1,6 @@
 'use client';
 
-import { PollOption, PollSettings, User, Vote } from '@/types/shared';
+import { PollData, PollOption, PollSettings, User, Vote } from '@/types/shared';
 import { createContext, useContext, useState } from 'react';
 
 interface PollContext {
@@ -32,22 +32,43 @@ interface PollContext {
   resetPoll: () => void;
 }
 
-const defaultSettings: PollSettings = {
-  allowMultipleVotes: false,
-  allowVotersToAddOptions: false,
-};
-
 const PollContext = createContext<PollContext | undefined>(undefined);
 
-export function PollContextProvider({ children }: { children: React.ReactNode }) {
-  // Poll data
-  const [pollId, setPollId] = useState('');
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState<PollOption[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [settings, setSettings] = useState<PollSettings>(defaultSettings);
-  const [votes, setVotes] = useState<Record<string, Vote>>({});
-  const [users, setUsers] = useState<Record<string, User>>({});
+export function PollContextProvider({
+  initialPoll,
+  initialVotes,
+  initialUsers,
+  initialIsAdmin,
+  children,
+}: {
+  initialPoll?: PollData;
+  initialVotes?: Record<string, Vote>;
+  initialUsers?: Record<string, User>;
+  initialIsAdmin?: boolean;
+  children: React.ReactNode;
+}) {
+  const defaultSettings: PollSettings = {
+    allowMultipleVotes: false,
+    allowVotersToAddOptions: false,
+  };
+
+  const defaultPoll = initialPoll || {
+    id: '',
+    question: '',
+    options: [],
+    settings: defaultSettings,
+  };
+
+  const [pollId, setPollId] = useState(defaultPoll.id);
+  const [question, setQuestion] = useState(defaultPoll.question);
+  const [options, setOptions] = useState<PollOption[]>(defaultPoll.options);
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin || false);
+  const [settings, setSettings] = useState<PollSettings>({
+    allowMultipleVotes: defaultPoll.settings.allowMultipleVotes,
+    allowVotersToAddOptions: defaultPoll.settings.allowVotersToAddOptions,
+  });
+  const [votes, setVotes] = useState<Record<string, Vote>>(initialVotes || {});
+  const [users, setUsers] = useState<Record<string, User>>(initialUsers || {});
 
   // Validation state
   const [hasQuestionError, setHasQuestionError] = useState(false);

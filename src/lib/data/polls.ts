@@ -70,7 +70,7 @@ export async function getPollSnapshot(pollId: string): Promise<PollSnapshot> {
         text: option.text,
         order: option.order,
       })),
-      pollSettings: {
+      settings: {
         allowMultipleVotes: poll.allowMultipleVotes,
         allowVotersToAddOptions: poll.allowVotersToAddOptions,
       },

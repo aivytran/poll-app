@@ -1,116 +1,130 @@
+'use client';
+
 import { ListPlus, Pencil } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
-import { createPollOption, deleteVote, submitVote } from '@/lib/api';
-
 import { useAuth } from '@/hooks/AuthContext';
 import { usePoll } from '@/hooks/PollContext';
+import { createPollOption, deleteVote, submitVote } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { Vote } from '@/types/shared';
+
+import { calculateProgressPercentage } from '@/utils/pollUtils';
 import { AddOptionInput } from './AddOptionInput';
 import { OptionItemCard } from './OptionItemCard';
 
 export function OptionCardVoteMode({ onEnterEditMode }: { onEnterEditMode: () => void }) {
   const { userId } = useAuth();
-  const { options, votes, users, settings, isAdmin, pollId } = usePoll();
-
+  const { options, votes, users, settings, isAdmin, pollId, setVotes } = usePoll();
   const [processingOptionId, setProcessingOptionId] = useState<string | null>(null);
 
   const { votesByOption, userVoteMap, maxVotes } = useMemo(() => {
-    const votesByOption: Record<string, Vote[]> = {};
-    const userVoteMap: Record<string, string> = {}; // optionId → voteId
-    let max = 0;
+    const result: {
+      votesByOption: Record<string, Vote[]>;
+      userVoteMap: Record<string, string>;
+      maxVotes: number;
+    } = { votesByOption: {}, userVoteMap: {}, maxVotes: 0 };
 
     Object.values(votes).forEach(vote => {
-      // bucket votes per option
-      const bucket = votesByOption[vote.optionId] ?? (votesByOption[vote.optionId] = []);
+      const bucket =
+        result.votesByOption[vote.optionId] ?? (result.votesByOption[vote.optionId] = []);
       bucket.push(vote);
 
-      // track the max votes per option
-      if (bucket.length > max) max = bucket.length;
+      if (bucket.length > result.maxVotes) result.maxVotes = bucket.length;
 
-      // track the current user’s vote for quick lookup
       if (vote.userId === userId) {
-        userVoteMap[vote.optionId] = vote.id;
+        result.userVoteMap[vote.optionId] = vote.id;
       }
     });
 
-    return { votesByOption, userVoteMap, maxVotes: max };
+    return result;
   }, [votes, userId]);
 
-  // Whether to show voter names (any user has non-blank name)
-  const hasUserName = useMemo(
-    () => Object.values(users).some(u => (u.name ?? '').trim().length > 0),
-    [users]
+  const handleVote = useCallback(
+    async (optionId: string) => {
+      if (processingOptionId) return; // debounce rapid taps
+      setProcessingOptionId(optionId);
+
+      try {
+        const existingVoteId = userVoteMap[optionId];
+
+        if (existingVoteId) {
+          await deleteVote(existingVoteId);
+          const { [existingVoteId]: _removed, ...rest } = votes;
+          setVotes(rest);
+          return;
+        }
+
+        // If only one vote is allowed, clear the user’s previous vote first
+        if (!settings.allowMultipleVotes) {
+          const prevVoteIds = Object.values(userVoteMap);
+          if (prevVoteIds.length) {
+            const prevId = prevVoteIds[0];
+            await deleteVote(prevId);
+            const { [prevId]: _r, ...rest } = votes;
+            setVotes(rest);
+          }
+        }
+
+        const newVote = await submitVote(optionId, userId);
+        if (newVote) {
+          setVotes({ ...votes, [newVote.id]: newVote });
+        }
+      } catch (err) {
+        console.error('Error processing vote:', err);
+      } finally {
+        setProcessingOptionId(null);
+      }
+    },
+    [processingOptionId, userVoteMap, settings.allowMultipleVotes, userId, setVotes, votes]
   );
 
-  // Handle voting/unvoting for an option
-  const handleVote = async (optionId: string) => {
-    if (processingOptionId) return; // debounce double-clicks
-    setProcessingOptionId(optionId);
-
-    try {
-      const existingVoteId = userVoteMap[optionId];
-
-      if (existingVoteId) {
-        /* un-vote */
-        await deleteVote(existingVoteId);
-      } else {
-        /* cast (maybe after clearing previous vote) */
-        if (!settings.allowMultipleVotes && Object.keys(userVoteMap).length > 0) {
-          await deleteVote(Object.values(userVoteMap)[0]);
-        }
-        if (!userVoteMap[optionId]) {
-          await submitVote(optionId, userId);
-        }
+  const handleAddOption = useCallback(
+    async (newOptionText: string) => {
+      try {
+        const { error } = await createPollOption(pollId, newOptionText);
+        if (error) alert(error);
+      } catch (err) {
+        console.error('Error adding option:', err);
       }
-    } catch (err) {
-      console.error('Error processing vote:', err);
-    } finally {
-      setTimeout(() => setProcessingOptionId(null), 300); // avoid rapid taps
-    }
-  };
+    },
+    [pollId]
+  );
 
-  // Handle adding a new option
-  const handleAddOption = async (newOption: string) => {
-    try {
-      const result = await createPollOption(pollId, newOption);
-
-      if (result.error) {
-        alert(result.error);
-      }
-    } catch (error) {
-      console.error('Error adding option:', error);
-    }
-  };
+  const currentUserNamePresent = (users[userId]?.name ?? '').trim().length > 0;
 
   return (
-    <>
+    <div
+      className={cn(
+        !currentUserNamePresent && 'pointer-events-none opacity-60 select-none cursor-not-allowed'
+      )}
+    >
       <CardContent className="w-full space-y-3 px-2 sm:px-4">
         {options.map(option => (
           <OptionItemCard
             key={option.id}
-            id={option.id}
-            text={option.text}
+            option={option}
             votes={votesByOption[option.id]}
+            onClick={handleVote}
             isVoted={!!userVoteMap[option.id]}
-            maxVotes={maxVotes}
-            hasUserName={hasUserName}
-            onClick={id => handleVote(id)}
-            isProcessing={processingOptionId === option.id}
+            isDisabled={processingOptionId === option.id}
+            progressBarPercentage={calculateProgressPercentage(
+              votesByOption[option.id]?.length,
+              maxVotes
+            )}
           />
         ))}
       </CardContent>
+
       <CardFooter>
-        {/* Admin Edit Button */}
         {isAdmin && (
-          <Button onClick={onEnterEditMode} className="w-full">
+          <Button onClick={onEnterEditMode} className="w-full mt-8">
             <Pencil className="h-4 w-4 mr-2" />
             Edit Poll Options
           </Button>
         )}
 
-        {/* Add Option Card - Only show for non-admin users when allowing voter options */}
         {settings.allowVotersToAddOptions && !isAdmin && (
           <Card className="w-full bg-primary-foreground/50 gap-2">
             <CardHeader>
@@ -125,6 +139,6 @@ export function OptionCardVoteMode({ onEnterEditMode }: { onEnterEditMode: () =>
           </Card>
         )}
       </CardFooter>
-    </>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { Edit, User as UserIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button, Card, CardContent, Input } from '@/components/ui';
 import { useAuth } from '@/hooks/AuthContext';
@@ -9,24 +9,12 @@ import { usePoll } from '@/hooks/PollContext';
 import { updateUserName } from '@/lib/api';
 
 export function UserNameCard() {
-  const { users } = usePoll();
+  const { users, setUsers } = usePoll();
   const { userId } = useAuth();
 
-  const [name, setName] = useState('');
-  const [isEditing, setIsEditing] = useState(true);
-
-  useEffect(() => {
-    console.log(`${new Date().toISOString()} [UserNameCard] users: ${JSON.stringify(users)}`);
-    console.log(`${new Date().toISOString()} [UserNameCard] userId: ${userId}`);
-  }, []);
-
-  useEffect(() => {
-    const currentUser = users[userId];
-    if (currentUser) {
-      setName(currentUser.name || '');
-      setIsEditing(!currentUser.name);
-    }
-  }, [users, userId]);
+  const currentUser = users[userId];
+  const [name, setName] = useState(currentUser?.name || '');
+  const [isEditing, setIsEditing] = useState(!currentUser?.name);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -40,6 +28,7 @@ export function UserNameCard() {
       const result = await updateUserName(userId!, name.trim());
       if (result) {
         setIsEditing(false);
+        setUsers({ ...users, [userId!]: { ...users[userId!], name } });
       }
     } catch (error) {
       console.error('Error updating name:', error);

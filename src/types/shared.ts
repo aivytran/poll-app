@@ -6,7 +6,7 @@ export interface User {
 export interface PollData {
   id: string;
   question: string;
-  pollSettings: PollSettings;
+  settings: PollSettings;
   options: PollOption[];
   adminToken: string;
 }
