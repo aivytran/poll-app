@@ -8,23 +8,14 @@ import {
   CardTitle,
   Checkbox,
 } from '@/components/ui';
-
-interface SettingCardProps {
-  allowMultipleVotes: boolean;
-  allowVotersToAddOptions: boolean;
-  setAllowMultipleVotes: (value: boolean) => void;
-  setAllowVotersToAddOptions: (value: boolean) => void;
-}
+import { usePoll } from '@/hooks/PollContext';
 
 /**
  * Component for managing poll settings
  */
-export function SettingCard({
-  allowMultipleVotes,
-  allowVotersToAddOptions,
-  setAllowMultipleVotes: setAllowMultipleVotes,
-  setAllowVotersToAddOptions: setAllowVotersToAddOptions,
-}: SettingCardProps) {
+export function SettingCard() {
+  const { settings, setSettings } = usePoll();
+
   return (
     <Card>
       <CardHeader>
@@ -40,8 +31,10 @@ export function SettingCard({
           <div className="flex items-center space-x-2">
             <Checkbox
               id="allowMultipleVotes"
-              checked={allowMultipleVotes}
-              onCheckedChange={setAllowMultipleVotes}
+              checked={settings.allowMultipleVotes}
+              onCheckedChange={() =>
+                setSettings({ ...settings, allowMultipleVotes: !settings.allowMultipleVotes })
+              }
             />
             <label htmlFor="allowMultipleVotes" className="text-sm text-foreground leading-none">
               Allow users to vote for multiple options
@@ -51,8 +44,13 @@ export function SettingCard({
           <div className="flex items-center space-x-2">
             <Checkbox
               id="allowVotersToAddOptions"
-              checked={allowVotersToAddOptions}
-              onCheckedChange={setAllowVotersToAddOptions}
+              checked={settings.allowVotersToAddOptions}
+              onCheckedChange={() =>
+                setSettings({
+                  ...settings,
+                  allowVotersToAddOptions: !settings.allowVotersToAddOptions,
+                })
+              }
             />
             <label
               htmlFor="allowVotersToAddOptions"

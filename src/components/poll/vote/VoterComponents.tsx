@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui';
+import { usePoll } from '@/hooks/PollContext';
 import { Vote } from '@/types/shared';
 import { getUserInitials } from '@/utils/pollUtils';
 
@@ -52,15 +53,20 @@ export function VoterAvatars({
     }
   };
 
+  const { users } = usePoll();
+  const getUserName = (vote: Vote) => {
+    return users[vote.userId]?.name || 'Anonymous';
+  };
+
   return (
     <div className="flex items-center -space-x-1 group" onClick={handleClick}>
       <TooltipProvider>
         {votes.slice(0, 3).map((vote, idx) => (
           <Tooltip key={vote.id || idx}>
             <TooltipTrigger asChild>
-              <VoterAvatar text={getUserInitials(vote.voterName)} />
+              <VoterAvatar text={getUserInitials(getUserName(vote))} />
             </TooltipTrigger>
-            <TooltipContent>{vote.voterName}</TooltipContent>
+            <TooltipContent>{getUserName(vote)}</TooltipContent>
           </Tooltip>
         ))}
 
@@ -74,7 +80,7 @@ export function VoterAvatars({
                 <p className="font-medium mb-1">Also voted:</p>
                 {votes.slice(3).map((vote, idx) => (
                   <p key={idx} className="truncate">
-                    {vote.voterName}
+                    {getUserName(vote)}
                   </p>
                 ))}
               </div>
@@ -98,6 +104,10 @@ export function VoterDrawer({
   votes: Vote[];
   optionText: string;
 }) {
+  const { users } = usePoll();
+  const getUserName = (vote: Vote) => {
+    return users[vote.userId]?.name || 'Anonymous';
+  };
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerContent>
@@ -114,8 +124,8 @@ export function VoterDrawer({
           {votes.length > 0 ? (
             votes.map(vote => (
               <div key={vote.id} className="flex items-center space-x-3 px-2 pb-2">
-                <VoterAvatar text={getUserInitials(vote.voterName)} />
-                <span className="font-medium">{vote.voterName || 'Anonymous'}</span>
+                <VoterAvatar text={getUserInitials(getUserName(vote))} />
+                <span className="font-medium">{getUserName(vote)}</span>
               </div>
             ))
           ) : (

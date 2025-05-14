@@ -1,141 +1,131 @@
+'use client';
+
 import { ListPlus, Pencil } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
+import { useAuth } from '@/hooks/AuthContext';
+import { usePoll } from '@/hooks/PollContext';
 import { createPollOption, deleteVote, submitVote } from '@/lib/api';
-import { PollOption, UserVote } from '@/types/shared';
+import { cn } from '@/lib/utils';
+import { Vote } from '@/types/shared';
 
-import { useAuth } from '@/context/AuthContext';
+import { calculateProgressPercentage } from '@/utils/pollUtils';
 import { AddOptionInput } from './AddOptionInput';
 import { OptionItemCard } from './OptionItemCard';
 
-interface OptionCardVoteModeProps {
-  pollId: string;
-  options: PollOption[];
-  userVotes: UserVote[];
-  allowVotersToAddOptions: boolean;
-  allowMultipleVotes: boolean;
-  hasUserName: boolean;
-  isAdmin: boolean;
-  onVoteChange: () => void;
-  onEnterEditMode: () => void;
-}
-
-export function OptionCardVoteMode({
-  pollId,
-  options,
-  userVotes,
-  allowVotersToAddOptions,
-  allowMultipleVotes,
-  hasUserName,
-  isAdmin,
-  onVoteChange,
-  onEnterEditMode,
-}: OptionCardVoteModeProps) {
-  const [newOption, setNewOption] = useState('');
+export function OptionCardVoteMode({ onEnterEditMode }: { onEnterEditMode: () => void }) {
+  const { userId } = useAuth();
+  const { options, votes, users, settings, isAdmin, pollId, setVotes } = usePoll();
   const [processingOptionId, setProcessingOptionId] = useState<string | null>(null);
-  const maxVotes = useMemo(
-    () => options.reduce((max, option) => Math.max(max, option.votes?.length || 0), 0),
-    [options]
-  );
-  const optionToUserVoteMap = useMemo(
-    () => Object.fromEntries(userVotes.map(vote => [vote.optionId, vote.id])),
-    [userVotes]
-  );
-  const userVotedOptions = useMemo(() => Object.keys(optionToUserVoteMap), [optionToUserVoteMap]);
 
-  // Handle voting/unvoting for an option
-  const handleVote = async (optionId: string) => {
-    // Prevent multiple rapid clicks on the same option
-    if (processingOptionId) {
-      return;
-    }
+  const { votesByOption, userVoteMap, maxVotes } = useMemo(() => {
+    const result: {
+      votesByOption: Record<string, Vote[]>;
+      userVoteMap: Record<string, string>;
+      maxVotes: number;
+    } = { votesByOption: {}, userVoteMap: {}, maxVotes: 0 };
 
-    setProcessingOptionId(optionId);
+    Object.values(votes).forEach(vote => {
+      const bucket =
+        result.votesByOption[vote.optionId] ?? (result.votesByOption[vote.optionId] = []);
+      bucket.push(vote);
 
-    try {
-      const voteId = optionToUserVoteMap[optionId];
-      const { userId } = useAuth();
+      if (bucket.length > result.maxVotes) result.maxVotes = bucket.length;
 
-      if (voteId) {
-        // User already voted for this option - remove the vote
-        await deleteVote(voteId);
-      } else {
-        // Add new vote (possibly removing existing vote first)
-        if (!allowMultipleVotes && userVotedOptions.length > 0) {
-          // Single vote mode: remove existing vote first
-          const existingVoteId = optionToUserVoteMap[userVotedOptions[0]];
-          if (existingVoteId) {
-            await deleteVote(existingVoteId);
+      if (vote.userId === userId) {
+        result.userVoteMap[vote.optionId] = vote.id;
+      }
+    });
+
+    return result;
+  }, [votes, userId]);
+
+  const handleVote = useCallback(
+    async (optionId: string) => {
+      if (processingOptionId) return; // debounce rapid taps
+      setProcessingOptionId(optionId);
+
+      try {
+        const existingVoteId = userVoteMap[optionId];
+
+        if (existingVoteId) {
+          await deleteVote(existingVoteId);
+          const { [existingVoteId]: _removed, ...rest } = votes;
+          setVotes(rest);
+          return;
+        }
+
+        // If only one vote is allowed, clear the user’s previous vote first
+        if (!settings.allowMultipleVotes) {
+          const prevVoteIds = Object.values(userVoteMap);
+          if (prevVoteIds.length) {
+            const prevId = prevVoteIds[0];
+            await deleteVote(prevId);
+            const { [prevId]: _r, ...rest } = votes;
+            setVotes(rest);
           }
         }
 
-        // This prevents duplicate votes in case of race conditions
-        const doubleCheckVoteId = optionToUserVoteMap[optionId];
-        if (!doubleCheckVoteId) {
-          // Submit the new vote
-          await submitVote(optionId, userId);
-        } else {
-          console.log('Prevented duplicate vote submission');
+        const newVote = await submitVote(optionId, userId);
+        if (newVote) {
+          setVotes({ ...votes, [newVote.id]: newVote });
         }
-      }
-
-      onVoteChange();
-    } catch (error) {
-      console.error('Error processing vote:', error);
-    } finally {
-      // Wait a short delay before allowing new votes
-      // This prevents rapid clicks even after state update
-      setTimeout(() => {
+      } catch (err) {
+        console.error('Error processing vote:', err);
+      } finally {
         setProcessingOptionId(null);
-      }, 300);
-    }
-  };
-
-  // Handle adding a new option
-  const handleAddOption = async () => {
-    try {
-      const result = await createPollOption(pollId, newOption);
-
-      if (result.error) {
-        alert(result.error);
-      } else {
-        setNewOption('');
-        onVoteChange();
       }
-    } catch (error) {
-      console.error('Error adding option:', error);
-    }
-  };
+    },
+    [processingOptionId, userVoteMap, settings.allowMultipleVotes, userId, setVotes, votes]
+  );
+
+  const handleAddOption = useCallback(
+    async (newOptionText: string) => {
+      try {
+        const { error } = await createPollOption(pollId, newOptionText);
+        if (error) alert(error);
+      } catch (err) {
+        console.error('Error adding option:', err);
+      }
+    },
+    [pollId]
+  );
+
+  const currentUserNamePresent = (users[userId]?.name ?? '').trim().length > 0;
 
   return (
-    <>
+    <div
+      className={cn(
+        !currentUserNamePresent && 'pointer-events-none opacity-60 select-none cursor-not-allowed'
+      )}
+    >
       <CardContent className="w-full space-y-3 px-2 sm:px-4">
         {options.map(option => (
           <OptionItemCard
             key={option.id}
-            id={option.id}
-            text={option.text}
-            votes={option.votes}
-            isVoted={!!optionToUserVoteMap[option.id]}
-            maxVotes={maxVotes}
-            hasUserName={hasUserName}
-            onClick={id => handleVote(id)}
-            isProcessing={processingOptionId === option.id}
+            option={option}
+            votes={votesByOption[option.id]}
+            onClick={handleVote}
+            isVoted={!!userVoteMap[option.id]}
+            isDisabled={processingOptionId === option.id}
+            progressBarPercentage={calculateProgressPercentage(
+              votesByOption[option.id]?.length,
+              maxVotes
+            )}
           />
         ))}
       </CardContent>
+
       <CardFooter>
-        {/* Admin Edit Button */}
         {isAdmin && (
-          <Button onClick={onEnterEditMode} className="w-full">
+          <Button onClick={onEnterEditMode} className="w-full mt-8">
             <Pencil className="h-4 w-4 mr-2" />
             Edit Poll Options
           </Button>
         )}
 
-        {/* Add Option Card - Only show for non-admin users when allowing voter options */}
-        {allowVotersToAddOptions && hasUserName && !isAdmin && (
+        {settings.allowVotersToAddOptions && !isAdmin && (
           <Card className="w-full bg-primary-foreground/50 gap-2">
             <CardHeader>
               <CardTitle>
@@ -144,15 +134,11 @@ export function OptionCardVoteMode({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <AddOptionInput
-                value={newOption}
-                onValueChange={setNewOption}
-                onAddOption={handleAddOption}
-              />
+              <AddOptionInput onAddOption={handleAddOption} />
             </CardContent>
           </Card>
         )}
       </CardFooter>
-    </>
+    </div>
   );
 }

@@ -1,20 +1,13 @@
 import { useState } from 'react';
 
 import { Button, CardContent, CardFooter } from '@/components/ui';
+import { usePoll } from '@/hooks/PollContext';
 import { updatePoll } from '@/lib/api';
-import { uniqueId } from '@/utils/pollUtils';
 
 import { PollOption } from '@/types/shared';
+import { uniqueId } from '@/utils/pollUtils';
 import { DragDropOptions } from '../shared/DragDropOptions';
 import { AddOptionInput } from './AddOptionInput';
-
-interface OptionCardEditModeProps {
-  pollId: string;
-  token: string;
-  initialOptions: PollOption[];
-  onSaveComplete: () => void;
-  onCancelEdit: () => void;
-}
 
 // Option format for API updates
 type OptionForUpdate = {
@@ -23,70 +16,22 @@ type OptionForUpdate = {
   order: number;
 };
 
-export function OptionCardEditMode({
-  pollId,
-  token,
-  initialOptions,
-  onSaveComplete,
-  onCancelEdit,
-}: OptionCardEditModeProps) {
+export function OptionCardEditMode({ onExitEditMode }: { onExitEditMode: () => void }) {
+  const { options, setHasOptionError } = usePoll();
+
   // Form state
-  const [editableOptions, setEditableOptions] = useState<PollOption[]>(initialOptions);
-  const [newOptionText, setNewOptionText] = useState('');
+  const [editingOptions, setEditingOptions] = useState<PollOption[]>(options);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState(false);
 
   // Validation function
   const validateOptions = (): boolean => {
-    const hasEmptyOptions = editableOptions.some(option => !option.text.trim());
-    setValidationError(hasEmptyOptions);
+    const hasEmptyOptions = editingOptions.some(option => !option.text.trim());
+    setHasOptionError(hasEmptyOptions);
     return !hasEmptyOptions;
   };
 
-  // Option handlers
-  const handleOptionsChange = (updatedOptions: PollOption[]) => {
-    // Map DraggableOption back to PollOption
-    const newOptions = updatedOptions
-      .map(opt => {
-        const original = editableOptions.find(o => o.id === opt.id);
-        if (!original) {
-          return null;
-        }
-        return {
-          ...original,
-          text: opt.text,
-        };
-      })
-      .filter(Boolean) as PollOption[];
-
-    setEditableOptions(newOptions);
-
-    // Clear validation error if all options now have values
-    if (validationError && !newOptions.some(option => !option.text.trim())) {
-      setValidationError(false);
-    }
-  };
-
-  const handleRemoveOption = (id: string) => {
-    const optionToRemove = editableOptions.find(option => option.id === id);
-    if (optionToRemove && (optionToRemove.votes?.length || 0) > 0) {
-      alert('Cannot remove options that have votes');
-      return;
-    }
-
-    setEditableOptions(prev => prev.filter(option => option.id !== id));
-  };
-
-  const handleAddOption = () => {
-    const newPollOption: PollOption = {
-      id: uniqueId(),
-      text: newOptionText,
-      votes: [],
-      isNew: true,
-    };
-
-    setEditableOptions(prev => [...prev, newPollOption]);
-    setNewOptionText('');
+  const handleAddOption = (text: string) => {
+    setEditingOptions(prev => [...prev, { id: uniqueId(), text, isNew: true }]);
   };
 
   // Save changes to the server
@@ -96,21 +41,22 @@ export function OptionCardEditMode({
     }
 
     setIsSubmitting(true);
+    const { pollId } = usePoll();
 
     try {
       // Prepare options for the API with correct order
-      const optionsForUpdate: OptionForUpdate[] = editableOptions.map((option, index) => ({
+      const optionsForUpdate: OptionForUpdate[] = editingOptions.map((option, index) => ({
         ...(option.isNew ? {} : { id: option.id }),
         text: option.text,
         order: index,
       }));
 
-      const result = await updatePoll(pollId, optionsForUpdate, token);
+      const result = await updatePoll(pollId, optionsForUpdate);
 
       if (result.error) {
         alert(result.error);
       } else {
-        onSaveComplete();
+        onExitEditMode();
       }
     } catch (error) {
       console.error('Error updating options:', error);
@@ -120,41 +66,17 @@ export function OptionCardEditMode({
     }
   };
 
-  // Helper functions for option properties
-  const isOptionDeletable = (id: string) => {
-    const option = editableOptions.find(o => o.id === id);
-    return !option?.votes?.length && editableOptions.length > 2;
-  };
-
-  const isOptionReadOnly = (id: string) => {
-    const option = editableOptions.find(o => o.id === id);
-    return (option?.votes?.length || 0) > 0;
-  };
-
   return (
     <>
       <CardContent className="w-full space-y-3 mb-3 px-2 sm:px-4">
-        <DragDropOptions
-          options={editableOptions}
-          onChange={handleOptionsChange}
-          onRemove={handleRemoveOption}
-          isOptionDeletable={isOptionDeletable}
-          isOptionReadOnly={isOptionReadOnly}
-          showVotes={true}
-          showError={validationError}
-        />
+        <DragDropOptions options={editingOptions} setOptions={setEditingOptions} />
 
-        <AddOptionInput
-          value={newOptionText}
-          onValueChange={setNewOptionText}
-          onAddOption={handleAddOption}
-          isDisabled={isSubmitting}
-        />
+        <AddOptionInput onAddOption={handleAddOption} isDisabled={isSubmitting} />
       </CardContent>
 
       {/* Action buttons */}
       <CardFooter className="w-full flex gap-3 justify-between px-2 sm:px-4">
-        <Button variant="outline" onClick={onCancelEdit} className="flex-1">
+        <Button variant="outline" onClick={onExitEditMode} className="flex-1">
           Cancel
         </Button>
         <Button onClick={handleSaveChanges} disabled={isSubmitting} className="flex-1">

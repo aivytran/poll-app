@@ -1,14 +1,12 @@
 import { Check, Users } from 'lucide-react';
 
 import { Badge, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui';
+import { usePoll } from '@/hooks/PollContext';
 
-interface QuestionCardProps {
-  question: string;
-  responsesCount: number;
-  allowMultipleVotes: boolean;
-}
+export function QuestionCard() {
+  const { question, settings, votes } = usePoll();
+  const responsesCount = Object.keys(votes).length;
 
-export function QuestionCard({ question, responsesCount, allowMultipleVotes }: QuestionCardProps) {
   return (
     <Card className="flex flex-col items-center justify-center">
       <CardHeader className="w-full flex flex-col items-center">
@@ -23,7 +21,7 @@ export function QuestionCard({ question, responsesCount, allowMultipleVotes }: Q
           {responsesCount} {responsesCount === 1 ? 'response' : 'responses'}
         </Badge>
 
-        {allowMultipleVotes && (
+        {settings.allowMultipleVotes && (
           <Badge className="ml-3">
             <Check />
             Multiple choices allowed

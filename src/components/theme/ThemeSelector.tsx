@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 
-import { BackgroundTheme, useTheme } from '@/context/ThemeContext';
+import { BackgroundTheme, useTheme } from '@/hooks/ThemeContext';
 
 const themes: { id: BackgroundTheme; name: string; icon: string }[] = [
   {

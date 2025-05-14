@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { createPoll } from '@/lib/api';
-import { uniqueId } from '@/utils/pollUtils';
 
-import { useAuth } from '@/context/AuthContext';
-import { PollOption } from '@/types/shared';
+import { useAuth } from '@/hooks/AuthContext';
+import { usePoll } from '@/hooks/PollContext';
 import { OptionCard } from './OptionCard';
 import { PollCreationSuccessPage } from './PollCreationSuccessPage';
 import { QuestionCard } from './QuestionCard';
@@ -17,30 +16,18 @@ import { SettingCard } from './SettingCard';
  * Container for creating a new poll with options and settings
  */
 export function PollContainer() {
-  // Form state
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState<PollOption[]>([
-    { id: uniqueId(), text: '' },
-    { id: uniqueId(), text: '' },
-  ]);
-  const [allowMultipleVotes, setAllowMultipleVotes] = useState(false);
-  const [allowVotersToAddOptions, setAllowVotersToAddOptions] = useState(false);
+  const { question, options, settings, setHasQuestionError, setHasOptionError } = usePoll();
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultLinks, setResultLinks] = useState(null);
 
-  // Validation state
-  const [questionError, setQuestionError] = useState(false);
-  const [optionError, setOptionError] = useState(false);
-
-  // Validation logic extracted to separate function
   const validateForm = () => {
     const hasEmptyQuestion = !question.trim();
     const hasEmptyOptions = options.some(option => !option.text.trim());
 
-    setQuestionError(hasEmptyQuestion);
-    setOptionError(hasEmptyOptions);
+    setHasQuestionError(hasEmptyQuestion);
+    setHasOptionError(hasEmptyOptions);
 
     return !hasEmptyQuestion && !hasEmptyOptions;
   };
@@ -59,9 +46,9 @@ export function PollContainer() {
       const response = await createPoll(
         question,
         userId,
-        allowMultipleVotes,
         optionValues,
-        allowVotersToAddOptions
+        settings.allowMultipleVotes,
+        settings.allowVotersToAddOptions
       );
 
       if (response.error) {
@@ -75,20 +62,6 @@ export function PollContainer() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Reset form to create another poll
-  const handleCreateAnother = () => {
-    setQuestion('');
-    setOptions([
-      { id: uniqueId(), text: '' },
-      { id: uniqueId(), text: '' },
-    ]);
-    setAllowMultipleVotes(false);
-    setAllowVotersToAddOptions(false);
-    setResultLinks(null);
-    setQuestionError(false);
-    setOptionError(false);
   };
 
   // Show success view if poll was created, otherwise show form
@@ -107,40 +80,18 @@ export function PollContainer() {
 
       {!isPollCreated ? (
         <>
-          <QuestionCard
-            question={question}
-            setQuestion={setQuestion}
-            hasQuestionError={questionError}
-            setQuestionError={setQuestionError}
-          />
+          <QuestionCard />
 
-          <OptionCard
-            options={options}
-            setOptions={setOptions}
-            hasOptionError={optionError}
-            setOptionError={setOptionError}
-          />
+          <OptionCard />
 
-          <SettingCard
-            allowMultipleVotes={allowMultipleVotes}
-            allowVotersToAddOptions={allowVotersToAddOptions}
-            setAllowMultipleVotes={setAllowMultipleVotes}
-            setAllowVotersToAddOptions={setAllowVotersToAddOptions}
-          />
+          <SettingCard />
 
           <Button size="lg" variant="default" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Poll'}
           </Button>
         </>
       ) : (
-        <PollCreationSuccessPage
-          question={question}
-          options={options}
-          allowMultipleVotes={allowMultipleVotes}
-          allowVotersToAddOptions={allowVotersToAddOptions}
-          resultLinks={resultLinks}
-          onCreateAnother={handleCreateAnother}
-        />
+        <PollCreationSuccessPage resultLinks={resultLinks} />
       )}
     </div>
   );

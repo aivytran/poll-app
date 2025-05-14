@@ -1,26 +1,41 @@
-// Common option interfaces
+export interface User {
+  id: string;
+  name: string;
+}
+
+export interface PollData {
+  id: string;
+  question: string;
+  settings: PollSettings;
+  options: PollOption[];
+  adminToken: string;
+}
+
 export interface PollOption {
   id: string;
   text: string;
-  votes?: Vote[];
   order?: number;
   isNew?: boolean;
 }
 
-// Common vote-related interfaces
+export interface PollSettings {
+  allowMultipleVotes: boolean;
+  allowVotersToAddOptions: boolean;
+}
+
 export interface Vote {
   id: string;
-  userId?: string;
-  voterName?: string;
-}
-
-export interface UserVote {
-  id: string;
   optionId: string;
+  userId: string;
 }
 
-// Common validation props
-export interface ValidationProps {
-  error?: boolean;
-  showError?: boolean;
+export interface User {
+  id: string;
+  name: string;
+}
+
+export interface PollSnapshot {
+  poll: PollData;
+  votes: Record<string, Vote>;
+  users: Record<string, User>;
 }

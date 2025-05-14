@@ -1,44 +1,13 @@
-import { voteWithUserName } from '@/lib/extensions';
 import prisma from '@/lib/prisma';
+import { PollSnapshot, User, Vote } from '@/types/shared';
 import 'server-only';
 
-interface PollData {
-  id: string;
-  question: string;
-  allowMultipleVotes: boolean;
-  allowVotersToAddOptions: boolean;
-  adminToken: string;
-  createdAt: string;
-  options: {
-    id: string;
-    text: string;
-    order: number;
-    votes: {
-      id: string;
-      voterName: string;
-    }[];
-  }[];
-}
-
-interface UserData {
-  id: string;
-  name: string;
-}
-
-interface VoteData {
-  votes: {
-    id: string;
-    optionId: string;
-  }[];
-}
-
 /**
- * Fetches poll data with options and votes
+ * Fetches a poll along with all options, votes, and voters and returns the
+ * result in a fully‑normalized structure
  */
-export async function getPollData(pollId: string): Promise<PollData | null> {
-  const extendedPrisma = prisma.$extends(voteWithUserName);
-
-  const poll = await extendedPrisma.poll.findUnique({
+export async function getPollSnapshot(pollId: string): Promise<PollSnapshot> {
+  const poll = await prisma.poll.findUnique({
     where: { id: pollId },
     select: {
       id: true,
@@ -46,7 +15,6 @@ export async function getPollData(pollId: string): Promise<PollData | null> {
       allowMultipleVotes: true,
       allowVotersToAddOptions: true,
       adminToken: true,
-      createdAt: true,
       options: {
         select: {
           id: true,
@@ -55,73 +23,60 @@ export async function getPollData(pollId: string): Promise<PollData | null> {
           votes: {
             select: {
               id: true,
-              voterName: true,
+              optionId: true,
+              userId: true,
+              user: { select: { id: true, name: true } },
             },
           },
         },
-        orderBy: {
-          order: 'asc',
-        },
+        orderBy: { order: 'asc' },
       },
     },
   });
 
-  if (!poll) return null;
+  if (!poll) {
+    throw new Error('Poll not found');
+  }
 
-  // Properly serialize the poll data to avoid non-serializable objects
-  return {
-    ...poll,
-    createdAt: poll.createdAt.toISOString(),
-    adminToken: poll.adminToken || '',
-    options: poll.options.map(option => ({
-      ...option,
-      votes: option.votes.map(vote => ({
+  const users: Record<string, User> = {};
+  const votes: Record<string, Vote> = {};
+
+  // Normalize nested votes
+  for (const option of poll.options) {
+    // Process votes for this option
+    for (const vote of option.votes) {
+      votes[vote.id] = {
         id: vote.id,
-        voterName: vote.voterName || '',
+        optionId: vote.optionId,
+        userId: vote.userId,
+      };
+
+      // Add voter if not already present
+      if (!users[vote.user.id]) {
+        users[vote.user.id] = {
+          id: vote.user.id,
+          name: vote.user.name ?? '',
+        };
+      }
+    }
+  }
+
+  return {
+    poll: {
+      id: poll.id,
+      question: poll.question,
+      options: poll.options.map(option => ({
+        id: option.id,
+        text: option.text,
+        order: option.order,
       })),
-    })),
-  };
-}
-
-/**
- * Fetches user votes for a specific poll
- */
-export async function getUserVotes(userId: string, pollId: string): Promise<VoteData> {
-  const votes = await prisma.vote.findMany({
-    where: {
-      userId,
-      option: {
-        pollId,
+      settings: {
+        allowMultipleVotes: poll.allowMultipleVotes,
+        allowVotersToAddOptions: poll.allowVotersToAddOptions,
       },
+      adminToken: poll.adminToken!!,
     },
-    select: {
-      id: true,
-      optionId: true,
-    },
-  });
-
-  return {
-    votes: votes.map(vote => ({
-      id: vote.id,
-      optionId: vote.optionId,
-    })),
-  };
-}
-
-/**
- * Fetches user data by ID
- */
-export async function getUserData(userId: string): Promise<UserData | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, name: true },
-  });
-
-  if (!user) return null;
-
-  // Return a plain JavaScript object
-  return {
-    id: user.id,
-    name: user.name || '',
+    votes,
+    users,
   };
 }

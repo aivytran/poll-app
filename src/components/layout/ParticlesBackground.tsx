@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-import { BackgroundTheme, useTheme } from '@/context/ThemeContext';
+import { BackgroundTheme, useTheme } from '@/hooks/ThemeContext';
 
 interface Particle {
   x: number;
